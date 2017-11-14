@@ -51,11 +51,11 @@ INSTALLED_APPS = (
     'crispy_forms',
     'oscar',  # hack: add self for templates dir
     'promotions',
-    'rating',
     'skills',
     'planification',
     'examinations',
     'student',
+    'rating',
     'stats',
     'compressor',
     'users',
@@ -158,6 +158,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
 STATIC_URL = '/static/'
+
 
 MEDIA_URL = '/media/'
 

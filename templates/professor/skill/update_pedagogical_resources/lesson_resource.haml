@@ -3,6 +3,8 @@
 -load static
 -load bootstrap3
 
+%link{href: "{% static 'css/StarRating.css' %}", rel: "stylesheet"}
+
 %h5 Cours
 %b Videos
 %img{src: "{% static 'img/khanacademy-logo.png' %}", width: "143px"}
@@ -226,5 +228,163 @@
   -if resource_lesson_coder or resource_lesson_skills
     -include "professor/skill/update_pedagogical_resources/other.haml"
 
+%body
+    %header.header.text-center
+      %link{:href => "StarRating.css", :rel => "stylesheet", :type => "text/css"}/
+      %link{:href => "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css", :rel => "stylesheet"}/
+    %section.rating-widget
+      / Rating Stars Box
+      #starId.rating-stars.text-center{:float => "left"}
+        %ul#stars
+          %li.star{:data-value => "1", :title => "Mauvais"}
+            %i.fa.fa-star.fa-fw
+          %li.star{:data-value => "2", :title => "Passable"}
+            %i.fa.fa-star.fa-fw
+          %li.star{:data-value => "3", :title => "Satisfaisant"}
+            %i.fa.fa-star.fa-fw
+          %li.star{:data-value => "4", :title => "Bien"}
+            %i.fa.fa-star.fa-fw
+          %li.star{:data-value => "5", :title => "Excellent"}
+            %i.fa.fa-star.fa-fw
+      #Icon{:float => "left", :style => "display in-line"}
+        #IconText
+          %img{src: "{% static 'img/icons/star1.png' %}", :style => "width: 100%; height: 100%;"}/
+        #fillIcon
+          %img{src: "{% static 'img/icons/star2.png' %}", :style => "width: 5em; height: 5em;"}/
+    %section.questionnaire
+      La ressource est-elle complète ?
+      %form#question1{:method => "POST"}
+        %input{:name => "cc", :type => "RADIO", :value => "A"}/
+        A. Très complète
+        %br/
+        %input{:name => "cc", :type => "RADIO", :value => "B"}/
+        B. Assez complète
+        %br/
+        %input{:name => "cc", :type => "RADIO", :value => "C"}/
+        C. Pas complète
+        %br/
+      La ressource est-elle assez compréhensible ?
+      %form#question2{:method => "POST"}
+        %input{:name => "dd", :type => "RADIO", :value => "A"}/
+        A. Très compréhensible
+        %br/
+        %input{:name => "dd", :type => "RADIO", :value => "B"}/
+        B. Assez compréhensible
+        %br/
+        %input{:name => "dd", :type => "RADIO", :value => "C"}/
+        C. Pas compréhensible
+        %br/
+      La ressource est utile ?
+      %form#question3{:method => "POST"}
+        %input{:name => "ee", :type => "RADIO", :value => "A"}/
+        A. Très utile
+        %br/
+        %input{:name => "ee", :type => "RADIO", :value => "B"}/
+        B. Assez utile
+        %br/
+        %input{:name => "ee", :type => "RADIO", :value => "C"}/
+        C. Pas utile
+        %br/
+    %button#buttonSubmit Valider
+    %script{:src => "jquery-3.2.1.min.js", :type => "text/javascript"}
+    :javascript
+      $(document).ready(function(){
+
+        	/* We start by hiding the questionnaire, it becomes visible once the number of starts are selected */
+
+      	var fill = 0;
+      	var update = setInterval(function()
+      	{
+          	fill += 1;
+          	$('#fillIcon').css('height', (fill+'%'));
+          	//$('#fillIcon').css('margin-top', ((100 - fill)+'%'));
+          	if (fill == 60) {
+              	clearInterval(update);
+          }
+
+      	}, 75);
+
+        	$(".questionnaire").hide()
+        	$("#buttonSubmit").hide()
+
+      	/* Default value for star rating and responses*/
+      	var ratingValue = -1
+      	var resp1 = "?"
+      	var resp2 = "?"
+      	var resp3 = "?"
+
+        	/* Handles everything when mouse over star rating */
+        	$('#stars li').on('mouseover', function(){
+          var onStar = parseInt($(this).data('value'), 10); // The star currently mouse on
+
+          // Now highlight all the stars that's not after the current hovered star
+          $(this).parent().children('li.star').each(function(e){
+            if (e < onStar) {
+              $(this).addClass('hover');
+            }
+            else {
+              $(this).removeClass('hover');
+            }
+          });
+
+        	}).on('mouseout', function(){
+          	$(this).parent().children('li.star').each(function(e){
+            	$(this).removeClass('hover');
+          	});
+        	});
+
+
+        	/* Handles everything when we click on the stars */
+        	$('#stars li').on('click', function(){
+
+        		// We start by showing the questionnaire
+        		$(".questionnaire").show()
+        		$("#buttonSubmit").show()
+
+          	var onStar = parseInt($(this).data('value'), 10); // The star currently selected
+          	var stars = $(this).parent().children('li.star');
+
+          	for (i = 0; i < stars.length; i++) {
+            		$(stars[i]).removeClass('selected');
+          	}
+
+          	for (i = 0; i < onStar; i++) {
+            		$(stars[i]).addClass('selected');
+          	}
+
+          	// ratingValue contains the current value attribuated
+          	ratingValue = parseInt($('#stars li.selected').last().data('value'), 10);
+
+
+
+        	});
+
+        	$('#Icon').on('mouseover', function(){
+        		window.prompt("some text", "default text");
+        	});
+
+        	$('#buttonSubmit').on('click', function(){
+      			resp1 = $('input[name=cc]:checked', '#question1').val()
+      	       	resp2 = $('input[name=dd]:checked', '#question2').val()
+      			resp3 = $('input[name=ee]:checked', '#question3').val()
+      			if (resp1 == null || resp2 == null || resp3 == null)
+      			{
+      				alert("Veuillez répondre à toutes les questions")
+      			}
+      			else
+      			{
+      				var s = "Votre rating : " + ratingValue + " | vos réponses : " + resp1 + ", " + resp2 + ", " + resp3
+      				alert(s)
+      			}
+
+        		});
+
+
+
+
+      });
+
+
 %script{src: "{% static 'jquery-3.2.1.slim.js' %}"}
 %script{src: "{% static 'rating.js' %}"}
+
