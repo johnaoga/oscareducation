@@ -64,9 +64,11 @@ def dashboard(request):
     if Professor.objects.filter(user_id=request.user.id):
         prof = Professor.objects.get(user_id=request.user.id)
 
+    obj2 = None
     if prof is not None:
         if prof.status is not None:
             obj = json.loads(prof.status)
+            obj2 = prof.status_changed
         else:
             obj = {}
             obj["name"] = None
@@ -75,6 +77,7 @@ def dashboard(request):
             "stage"),
         "no_menu": True,
         "name": obj["name"],
+        "status_changed": obj2,
         })
 
 
