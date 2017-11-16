@@ -23,7 +23,6 @@ class Star_rating_TestCase(TestCase):
     def test_star_in_table(self):
         star_r = Star_rating.objects.get(id=self.id)
         self.assertEqual(star_r.star,2)
-        self.assertEqual(star_r.id,1)
 
 # Tests for the class Answer
 class Answer_TestCase(TestCase):
@@ -80,5 +79,5 @@ class Rating_TestCase(TestCase):
         self.ra1 = Rating.objects.create(resource=self.r1,question=self.q1,answer=self.a1,rated_by=self.u,rated_on=self.d1)
 
     def test_rating(self):
-        q = Rating.objects.get(pk=1)
+        q = Rating.objects.get(pk=self.ra1.id)
         self.assertEqual(q.answer.answer_statement,self.a1.answer_statement)

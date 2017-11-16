@@ -64,7 +64,7 @@
                           %a{href: "{{ item.link }}", target: "_blank"}
                             {{item.optionalName}}
                         -if item.file|cut:" "|length > 0 and item.mediaType == "file"
-                           %small.badge
+                          %small.badge
                             fichier
                           %a{href: "{{ MEDIA_URL }}{{ item.file }}", target: "_blank"}
                             {{item.optionalName}}
@@ -79,12 +79,12 @@
                             fichier
                           %a{href: "{{ MEDIA_URL }}{{ item.file }}", target: "_blank"}
                             {{item.file}}
-                    -if user.professor
-
-        %form.remove-form{method: "POST", action: "{% url 'professor:remove_pedagogical_ressources' type base.id 'resource' resource.id %}"}
-          -csrf_token
-          %button.btn.btn-danger.btn-xs.delete{type: "submit"}
-            supprimer
+                    -include "professor/question.haml"
+        -if user.professor and request.user == resource.added_by
+          %form.remove-form{method: "POST", action: "{% url 'professor:remove_pedagogical_ressources' type base.id 'resource' resource.id %}"}
+            -csrf_token
+            %button.btn.btn-danger.btn-xs.delete{type: "submit"}
+              supprimer
 
 
 

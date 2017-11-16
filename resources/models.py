@@ -86,10 +86,10 @@ class Resource(models.Model):
         """
         Creates or Modifies a question/answer to a resource by a user
 
-        :param question: the question answers by user
+        :param question: the question answered by user with answer
         :param answer: the answer to question by user
-        :param user: the user answering a question
-        :return: The rating object or None if the user may not rate the resource
+        :param user: User rating resource
+        :return: Rating object or None if the user may not rate the resource
         """
         if user == self.added_by:
             return None
@@ -98,8 +98,9 @@ class Resource(models.Model):
             rating = rating.first()
             rating.question = question
             rating.answer = answer
+            rating.rated_on = timezone.now()
             rating.save()
-        elif not rating.exists() and len(rating) == 0:
+        elif not rating.exists():
             rating = Rating.objects.create(
                 resource=self,
                 question=question,
@@ -111,6 +112,22 @@ class Resource(models.Model):
             #Error
             return None
         return rating
+
+    def get_rating(self,user):
+        """
+
+        :param user: User who rated the resource
+        :return:
+        """
+        if  self.added_by == user:
+            return None
+        ratings = Rating.objects.filter(user=user,resource=self)
+        if not ratings.exists():
+            return None
+        return ratings
+
+
+
 
 #khanAcademy video reference data parsed from source url
 
