@@ -29,8 +29,6 @@
     %section.questionnaire
       %input{id:"resource_id", type: "hidden", value: "{{ resource.id }}"}
       %input{id:"json_q", type: "hidden", value: "{{ questionnaire }}"}
-    %button{id:"buttonSubmit",  type: "submit"}
-      Valider
 
 -if resource.added_by == request.user
   %body{id: "post_user"}
@@ -40,6 +38,7 @@
 :javascript
       var json_data;
       var build = false;
+      var tot_stars;
       $(document).ready(function(){
 
         	/* We start by hiding the questionnaire, it becomes visible once the number of starts are selected */
@@ -89,9 +88,9 @@
         	$('#stars li').on('click', function(){
 
         		// We start by showing the questionnaire
-        		make_questionnaire()
+        		make_questionnaire();
         		//$(".questionnaire").show()
-        		$("#buttonSubmit").show()
+        		$("#buttonSubmit").show();
 
           	var onStar = parseInt($(this).data('value'), 10); // The star currently selected
           	var stars = $(this).parent().children('li.star');
@@ -106,20 +105,12 @@
 
           	// ratingValue contains the current value attribuated
           	ratingValue = parseInt($('#stars li.selected').last().data('value'), 10);
+          	tot_stars = ratingValue;
         	});
 
         	$('#Icon').on('mouseover', function(){
         		window.prompt("some text", "default text");
         	});
-
-        	$('#buttonSubmit').on('click', function(){
-      			submit(ratingValue);
-        		});
-        	/*$('#buttonSubmit').on('click', function(event){
-              event.preventDefault();
-              console.log("form submitted!")// sanity check
-              create_rate();
-            });*/
       });
       function create_rate(json_s) {
           $.ajax({
@@ -155,6 +146,13 @@
         for (var key in question_data) {
             addQuestion(body,question_data[key],key);
         }
+        var but = document.createElement('button');
+        but.id = "buttonSubmit";
+        but.type = 'submit';
+        but.innerHTML = 'Validate';
+        but.onclick = function() {  submit(tot_stars);};
+        body.appendChild(but);
+
         build=true;
       };
       function addQuestion(parentElement,array,question_id) {
@@ -209,23 +207,22 @@
               question_cnt+=1;
           }
           if (select_cnt != question_cnt) {
-              alert("Please answer all "+question_cnt+" questions")
+              alert("Please answer all "+question_cnt+" questions");
               console.log(select_cnt+" "+question_cnt);
           } else {
               create_rate(JSON.stringify(obj));
               alert("Thanks for your vote")
-              document.getElementById('buttonSubmit').disabled = true;
           }
       };
       function show_average() {
-          var elem = document.getElementsByName("answer")
+          var elem = document.getElementsByName("answer");
           for (i = 0; i < elem.length; i++) {
               var parent = elem[i].parentElement;
               var b = document.createElement('b');
-              b.style = "margin-left:30px;"
+              b.style = "margin-left:30px;";
               b.innerHTML = "votes: X <br>";
               parent.appendChild(b);
               elem[i].disabled = true;
           }
-          document.getElementById('buttonSubmit').remove();
+          document.getElementById('buttonSubmit').disabled = true;
       };
