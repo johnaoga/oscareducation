@@ -3,7 +3,7 @@
 -load static
 -load bootstrap3
 
--if resource.added_by != request.user
+-if resource.added_by != request.user and resource.id not in rated_resource
   %body
     %header.header.text-center
       %link{:href => "{% static 'StarRating.css' %}", :rel => "stylesheet", :type => "text/css"}/
@@ -29,10 +29,13 @@
     %section.questionnaire
       %input{id:"resource_id", type: "hidden", value: "{{ resource.id }}"}
       %input{id:"json_q", type: "hidden", value: "{{ questionnaire }}"}
+      %input{id:"rated", type: "hidden", value: "{{ rated_resource }}"}
 
 -if resource.added_by == request.user
   %body{id: "post_user"}
     .content You can't see the rating form. You are Owner of this resource
+-if resource.id in rated_resource and resource.added_by != request.user
+  .content Already rated by you! (show filled in rating with total votes)
 
 %script{:src => "{% static 'jquery-3.2.1.min.js' %}", :type => "text/javascript"}
 :javascript
@@ -119,17 +122,17 @@
               data : { json_str: json_s }, // data sent with the post request
 
               // handle a successful response
-              success : function(json) {
+              success : function(json_dat) {
                   // Use json to set average for each question
                   console.log("success GET"); // another sanity check
-                  show_average();
+                  show_average(json_dat);
               },
 
               // handle a non-successful response
               error : function(xhr,errmsg,err) {
                   $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+
                       " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
-                  console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+                  console.log(xhr.status + ": b" + xhr.responseText); // provide a bit more info about the error to the console
               }
           });
       };
@@ -172,11 +175,12 @@
               input.name = "answer";
               input.type = 'RADIO';
               input.value = a;
-              input.id = "a"+a_id;
+              input.id = a_id+"|"+question_id;
+              // save id of answer with question because multiple question can have same answer thus answer id
 
               var label = document.createElement('label');
               label.id = a_id;
-              label.for = a_id;
+              label.for = a_id+"|"+question_id;
               label.innerHTML = a;
 
 
@@ -196,10 +200,11 @@
           for (var key in json_data) {
               for (var answer in json_data[key]) {
                   if (answer > 0 && ((answer%2) == 0)) {
-                      selected = document.getElementById("a"+json_data[key][answer]);
+                      var s = json_data[key][answer]+"|"+key;
+                      selected = document.getElementById(s);
                       if (selected.checked) {
                           // store check boxes with corresponding question_id
-                          obj[key] = selected.id.replace("a","");
+                          obj[key] = selected.id.substring(0,selected.id.indexOf("|"));
                           select_cnt+=1
                       }
                   }
@@ -214,15 +219,18 @@
               alert("Thanks for your vote")
           }
       };
-      function show_average() {
+      function show_average(json_data) {
           var elem = document.getElementsByName("answer");
           for (i = 0; i < elem.length; i++) {
               var parent = elem[i].parentElement;
+              question_id = elem[i].id.substring(elem[i].id.indexOf('|')+1,elem[i].id.length);
+              answer_id = elem[i].id.substring(0,elem[i].id.indexOf('|'));
               var b = document.createElement('b');
               b.style = "margin-left:30px;";
-              b.innerHTML = "votes: X <br>";
+              b.innerHTML = "votes: "+ json_data[question_id][answer_id] +" <br>";
               parent.appendChild(b);
               elem[i].disabled = true;
           }
           document.getElementById('buttonSubmit').disabled = true;
+          document.getElementById('buttonSubmit').remove();
       };

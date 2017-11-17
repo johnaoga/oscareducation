@@ -51,7 +51,7 @@ import csv
 from django.http import JsonResponse
 from users.models import Student, Professor
 from rating.models import Question as RatingQuestion
-from rating.models import Questionnaire, Answer
+from rating.models import Questionnaire, Answer,Rating
 from django.conf import settings
 
 
@@ -816,6 +816,13 @@ def update_pedagogical_ressources(request, type, id):
     resource_form = ResourceForm()
     KhanAcademy_form = KhanAcademyForm()
     Sesamath_form = SesamathForm()
+    
+    rated_res = []
+    """All resource id from the page!"""
+    for item in base.resource.all():
+        r = Rating.objects.filter(resource=item.id,rated_by=request.user).exists()
+        if r:
+            rated_res.append(item.id)
 
     personal_resource = base.resource.filter(section="personal_resource")
     lesson_resource = base.resource.filter(section="lesson_resource")
@@ -1044,6 +1051,8 @@ def update_pedagogical_ressources(request, type, id):
             questionnaire_dict[item].append(int(qa.answer.id))
     json_questionnaire = json.dumps(questionnaire_dict)
 
+    """find all rated resource by user"""
+
     return render(request, "professor/skill/update_pedagogical_resources.haml", {
         "sesamath_references_manuals": sesamath_references_manuals,
         "sesamath_references_cahier": sesamath_references_cahiers,
@@ -1072,6 +1081,7 @@ def update_pedagogical_ressources(request, type, id):
         "sori_coder_lesson_resource_khanacademy": sori_coder_lesson_resource_khanacademy,
         "sori_coder_exercice_resource_sesamath": sori_coder_exercice_resource_sesamath,
         "questionnaire": json_questionnaire,
+        "rated_resource": rated_res,
     })
 
     # TODO : TO DELETE
@@ -1919,18 +1929,20 @@ def create_rate(request,type,id):
         try:
             resource = Resource.objects.get(pk=r_id)
         except Resource.DoesNotExist:
-            resource = None
-            return ;
+            print "Error: resource doensn't exist"
+            return
         resource.add_star(stars,request.user)
         for item in dict:
             if item != "resource_id" and item != "stars":
                 question = RatingQuestion.objects.get(pk=int(item))
+                response_data[question.id] = {}
                 answer = Answer.objects.get(pk=int(dict[item]))
                 resource.add_rating(question=question,answer=answer,user=request.user)
                 #TODO: add average of each answer for each function to json response_data
 
         # Fill response data with average for each question of that resource
-        response_data['value'] = 'Create post successful!'
+        for question in response_data:
+            response_data[question] = resource.get_votes_question(question)
 
         return HttpResponse(
             json.dumps(response_data),
