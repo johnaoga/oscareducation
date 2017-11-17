@@ -3,9 +3,10 @@ from __future__ import unicode_literals
 from django.db import models
 from django.contrib.postgres.fields import JSONField
 from django.contrib.auth.models import User
-from rating.models import Star_rating,Rating
+from rating.models import Star_rating,Rating,Questionnaire
 from django.utils import timezone
 from users.models import Professor,Student
+from django.db.models import Count
 
 
 """resources models"""
@@ -86,10 +87,10 @@ class Resource(models.Model):
         """
         Creates or Modifies a question/answer to a resource by a user
 
-        :param question: the question answers by user
+        :param question: the question answered by user with answer
         :param answer: the answer to question by user
-        :param user: the user answering a question
-        :return: The rating object or None if the user may not rate the resource
+        :param user: User rating resource
+        :return: Rating object or None if the user may not rate the resource
         """
         if user == self.added_by:
             return None
@@ -98,8 +99,9 @@ class Resource(models.Model):
             rating = rating.first()
             rating.question = question
             rating.answer = answer
+            rating.rated_on = timezone.now()
             rating.save()
-        elif not rating.exists() and len(rating) == 0:
+        elif not rating.exists():
             rating = Rating.objects.create(
                 resource=self,
                 question=question,
@@ -111,6 +113,35 @@ class Resource(models.Model):
             #Error
             return None
         return rating
+
+    def get_rating(self,user):
+        """
+
+        :param user: User who rated the resource
+        :return:
+        """
+        if  self.added_by == user:
+            return None
+        ratings = Rating.objects.filter(user=user,resource=self)
+        if not ratings.exists():
+            return None
+        return ratings
+
+    def get_votes_question(self,question):
+        """
+
+        :param question: the question we want to get all the answer votes from
+        :return: a dictionnary with the answer id as key and the number of votes as value for a specific question on a resource
+        """
+        total_answers = Questionnaire.objects.filter(question=question).values('answer')
+        Qset_rating = Rating.objects.filter(resource=self,question=question)
+        #ratings = answers.values('answer').annotate(num_answer=Count('answer')).order_by()
+        result = {}
+        for answer in total_answers:
+            a_id= int(answer['answer'])
+            result[a_id] = Qset_rating.filter(answer=a_id).count()
+        return result
+
 
 #khanAcademy video reference data parsed from source url
 

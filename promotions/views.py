@@ -50,6 +50,9 @@ from .utils import generate_random_password, user_is_professor, force_encoding
 import csv
 from django.http import JsonResponse
 from users.models import Student, Professor
+from rating.models import Question as RatingQuestion
+from rating.models import Questionnaire, Answer,Rating
+from django.conf import settings
 
 
 @user_is_professor
@@ -813,6 +816,13 @@ def update_pedagogical_ressources(request, type, id):
     resource_form = ResourceForm()
     KhanAcademy_form = KhanAcademyForm()
     Sesamath_form = SesamathForm()
+    
+    rated_res = []
+    """All resource id from the page!"""
+    for item in base.resource.all():
+        r = Rating.objects.filter(resource=item.id,rated_by=request.user).exists()
+        if r:
+            rated_res.append(item.id)
 
     personal_resource = base.resource.filter(section="personal_resource")
     lesson_resource = base.resource.filter(section="lesson_resource")
@@ -1024,6 +1034,25 @@ def update_pedagogical_ressources(request, type, id):
     sesamath_references_manuals = Sesamath.objects.filter(ressource_kind__iexact="Manuel")
     sesamath_references_cahiers = Sesamath.objects.filter(ressource_kind__iexact="Cahier")
 
+    questionnaire_dict = {}
+    """make a dict of questions and associated answers:
+        questionnaire_dict = {question_id1: [question_statement1,answer_statement,
+                                    answer_id,answer_statement,answer_id...],
+                             question_id2: [question_statement2,answer_statement,
+                                    answer_id,answer_statement,answer_id...]                                    
+                                    }
+    """
+    for item in settings.DEFAULT_QUESTIONS_ID:
+        qa_set = Questionnaire.objects.filter(question=item)
+        questionnaire_dict[item] = []
+        questionnaire_dict[item].append(RatingQuestion.objects.get(pk=item).question_statement)
+        for qa in qa_set:
+            questionnaire_dict[item].append(qa.answer.answer_statement)
+            questionnaire_dict[item].append(int(qa.answer.id))
+    json_questionnaire = json.dumps(questionnaire_dict)
+
+    """find all rated resource by user"""
+
     return render(request, "professor/skill/update_pedagogical_resources.haml", {
         "sesamath_references_manuals": sesamath_references_manuals,
         "sesamath_references_cahier": sesamath_references_cahiers,
@@ -1051,6 +1080,8 @@ def update_pedagogical_ressources(request, type, id):
         "sori_coder_lesson_resource_sesamath": sori_coder_lesson_resource_sesamath,
         "sori_coder_lesson_resource_khanacademy": sori_coder_lesson_resource_khanacademy,
         "sori_coder_exercice_resource_sesamath": sori_coder_exercice_resource_sesamath,
+        "questionnaire": json_questionnaire,
+        "rated_resource": rated_res,
     })
 
     # TODO : TO DELETE
@@ -1885,3 +1916,40 @@ def enseign_trans(request):
     data["code_r"] = CodeR.objects.all().order_by('id')
     data["section"] = Section.objects.all()
     return render(request, "professor/skill/new-list-trans.haml", data)
+
+
+def create_rate(request,type,id):
+    if request.method == 'POST':
+        json_str = request.POST.get('json_str')
+
+        response_data = {}
+        dict = json.loads(json_str)
+        r_id = dict["resource_id"]
+        stars = dict["stars"]
+        try:
+            resource = Resource.objects.get(pk=r_id)
+        except Resource.DoesNotExist:
+            print "Error: resource doensn't exist"
+            return
+        resource.add_star(stars,request.user)
+        for item in dict:
+            if item != "resource_id" and item != "stars":
+                question = RatingQuestion.objects.get(pk=int(item))
+                response_data[question.id] = {}
+                answer = Answer.objects.get(pk=int(dict[item]))
+                resource.add_rating(question=question,answer=answer,user=request.user)
+                #TODO: add average of each answer for each function to json response_data
+
+        # Fill response data with average for each question of that resource
+        for question in response_data:
+            response_data[question] = resource.get_votes_question(question)
+
+        return HttpResponse(
+            json.dumps(response_data),
+            content_type="application/json"
+        )
+    else:
+        return HttpResponse(
+            json.dumps({"nothing to see": "this isn't happening"}),
+            content_type="application/json"
+        )
