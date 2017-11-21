@@ -72,6 +72,8 @@ def dashboard(request):
         if prof.status is not None:
             obj = json.loads(prof.status)
             obj2 = prof.status_changed
+            prof.status_changed = False
+            prof.save()
         else:
             obj = {}
             obj["name"] = None
@@ -80,6 +82,7 @@ def dashboard(request):
             "stage"),
         "no_menu": True,
         "name": obj["name"],
+        "icon": obj["icon"],
         "status_changed": obj2,
         })
 

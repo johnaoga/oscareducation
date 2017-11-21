@@ -44,21 +44,23 @@
             Vous n'avez pas encore de classe, <a href="{% url 'professor:lesson_add' %}">cliquez ici pour en ajouter une</a>.
 
 
-    .col-md-30
-        %img{src: "http://simpleicon.com/wp-content/uploads/trophy-256x256.png"}
-     .txt
+  .container-fluid.boxclasse
+    %center
+      .txt
 
             - if name == nil
-                Vous n'avez pas de statut
+                Vous n'avez pas encore de statut.
             - else
-                Votre statut est #{name}
-
+                Votre statut est #{name}.
+      .col-md-30
+        %img{src: "#{icon}", "height": "100"}
 
   %link{href: "{% static 'css/statuspopup.css' %}", rel: "stylesheet"}
   -if status_changed
     .pop
-      %span x
-      %h1 Félicitations !
-      %p Vous êtes maintenant #{name} !
-    %script{src: "{% static 'js/jquery.min.js' %}"}
-    %script{src: "{% static 'js/statuspopup.js' %}"}
+      %center
+        %h1 Félicitations !
+        %img{src: "#{icon}", "height": "100", }
+        %p Vous êtes maintenant #{name} !
+  %script{src: "{% static 'js/jquery.min.js' %}"}
+  %script{src: "{% static 'js/statuspopup.js' %}"}
