@@ -39,11 +39,10 @@ class Professor(models.Model):
         if Top_contributor.objects.count() != 0:
             top = Top_contributor.objects.get(pk=1)
 
-
         if (top is None):
             if self.nbr_4_star_res > 4:
                 top = Top_contributor.objects.create(professor=self)
-                self.status = json.dumps(Status("Top Contributor", "icon.png").__dict__)
+                self.status = json.dumps(Status("Top Contributor", "/static/img/status5.png").__dict__)
                 is_top = True
                 self.save()
         else:
@@ -51,7 +50,7 @@ class Professor(models.Model):
             #print("top prof: " + str(top_prof.nbr_4_star_res) + "    me: " + str(self.nbr_4_star_res))
             if top_prof.nbr_4_star_res < self.nbr_4_star_res:
                 #print("update top prof")
-                self.status = json.dumps(Status("Top Contributor", "icon.png").__dict__)
+                self.status = json.dumps(Status("Top Contributor", "/static/img/status5.png").__dict__)
                 top.professor = self
                 top.save()
                 is_top = True
@@ -61,13 +60,13 @@ class Professor(models.Model):
 
         if not is_top:
             if self.nbr_4_star_res >= 1 and self.nbr_4_star_res < 4:
-                self.status = json.dumps(Status("Contributor", "icon.png").__dict__)
+                self.status = json.dumps(Status("Contributor", "/static/img/status1.png").__dict__)
             elif self.nbr_4_star_res >= 4 and self.nbr_4_star_res < 9:
-                self.status = json.dumps(Status("Motivated Contributor", "icon.png").__dict__)
+                self.status = json.dumps(Status("Motivated Contributor", "/static/img/status2.png").__dict__)
             elif self.nbr_4_star_res >= 9 and self.nbr_4_star_res < 19:
-                self.status = json.dumps(Status("Advanced Contributor", "icon.png").__dict__)
+                self.status = json.dumps(Status("Advanced Contributor", "/static/img/status3.png").__dict__)
             elif self.nbr_4_star_res >= 19:
-                self.status = json.dumps(Status("Super Contributor", "icon.png").__dict__)
+                self.status = json.dumps(Status("Super Contributor", "/static/img/status4.png").__dict__)
             self.save()
 
         """"statuss = Professor_status.objects.filter(min_contrib__lte=self.nbr_4_star_res)
