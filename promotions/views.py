@@ -51,7 +51,7 @@ import csv
 from django.http import JsonResponse
 from users.models import Student, Professor
 from rating.models import Question as RatingQuestion
-from rating.models import Questionnaire, Answer,Rating, Star_rating
+from rating.models import Rating, Star_rating
 from django.conf import settings
 from django.forms import model_to_dict
 
@@ -72,12 +72,21 @@ def dashboard(request):
     if prof is not None:
         if prof.status is not None:
             obj = json.loads(prof.status)
+            try:
+                obj["name"]
+            except KeyError:
+                obj["name"] = None
+            try:
+                obj["icon"]
+            except KeyError:
+                obj["icon"] = None
             obj2 = prof.status_changed
             prof.status_changed = False
             prof.save()
         else:
             obj = {}
             obj["name"] = None
+            obj["icon"] = None
     return render(request, "professor/dashboard.haml", {
         "lessons": Lesson.objects.filter(professors=request.user.professor).annotate(Count("students")).select_related(
             "stage"),

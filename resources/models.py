@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from django.db import models
 from django.contrib.postgres.fields import JSONField
 from django.contrib.auth.models import User
-from rating.models import Star_rating,Rating,Questionnaire
+from rating.models import Star_rating,Rating
 from django.utils import timezone
 from users.models import Professor,Student
 from django.db.models import Count
@@ -133,14 +133,7 @@ class Resource(models.Model):
         :param question: the question we want to get all the answer votes from
         :return: a dictionnary with the answer id as key and the number of votes as value for a specific question on a resource
         """
-        total_answers = Questionnaire.objects.filter(question=question).values('answer')
-        Qset_rating = Rating.objects.filter(resource=self,question=question)
-        #ratings = answers.values('answer').annotate(num_answer=Count('answer')).order_by()
-        result = {}
-        for answer in total_answers:
-            a_id= int(answer['answer'])
-            result[a_id] = Qset_rating.filter(answer=a_id).count()
-        return result
+        return None
 
 
 #khanAcademy video reference data parsed from source url
