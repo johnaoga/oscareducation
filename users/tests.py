@@ -40,9 +40,9 @@ class ProfessorTestCase(TestCase):
         self.assertEqual(prof.nbr_4_star_res, 4)
 
     def test_update_status(self):
-        top_stat = json.dumps(Status("Top Contributor", "icon.png").__dict__)
-        low = json.dumps(Status("Contributor", "icon.png").__dict__)
-        mid = json.dumps(Status("Motivated Contributor", "icon.png").__dict__)
+        top_stat = json.dumps(Status("Top Contributor", "/static/img/status5.png").__dict__)
+        low = json.dumps(Status("Contributor", "/static/img/status1.png").__dict__)
+        mid = json.dumps(Status("Motivated Contributor", "/static/img/status2.png").__dict__)
         prof1 = Professor.objects.get(pk=self.prof1.id)
         prof2 = Professor.objects.get(pk=self.prof2.id)
         prof1.inc()
