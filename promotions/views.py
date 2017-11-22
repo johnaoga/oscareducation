@@ -51,8 +51,9 @@ import csv
 from django.http import JsonResponse
 from users.models import Student, Professor
 from rating.models import Question as RatingQuestion
-from rating.models import Questionnaire, Answer,Rating
+from rating.models import Questionnaire, Answer,Rating, Star_rating
 from django.conf import settings
+from django.forms import model_to_dict
 
 
 @user_is_professor
@@ -817,12 +818,15 @@ def update_pedagogical_ressources(request, type, id):
     KhanAcademy_form = KhanAcademyForm()
     Sesamath_form = SesamathForm()
     
-    rated_res = []
+    rated_res = {}
     """All resource id from the page!"""
     for item in base.resource.all():
-        r = Rating.objects.filter(resource=item.id,rated_by=request.user).exists()
-        if r:
-            rated_res.append(item.id)
+        r = Rating.objects.filter(resource=item.id,rated_by=request.user)
+        s = Star_rating.objects.filter(resource=item.id,rated_by=request.user)
+        if r.exists() & s.exists():
+            if s.count() != 1:
+                print "Error more than 1 star rating for 1 resource"
+            rated_res[item.id] = model_to_dict(s.first(),fields = ["star","rated_on"],)
 
     personal_resource = base.resource.filter(section="personal_resource")
     lesson_resource = base.resource.filter(section="lesson_resource")
@@ -1034,16 +1038,30 @@ def update_pedagogical_ressources(request, type, id):
     sesamath_references_manuals = Sesamath.objects.filter(ressource_kind__iexact="Manuel")
     sesamath_references_cahiers = Sesamath.objects.filter(ressource_kind__iexact="Cahier")
 
-    questionnaire_dict = {}
     """make a dict of questions and associated answers:
-        questionnaire_dict = {question_id1: [question_statement1,answer_statement,
-                                    answer_id,answer_statement,answer_id...],
-                             question_id2: [question_statement2,answer_statement,
-                                    answer_id,answer_statement,answer_id...]                                    
-                                    }
+            questionnaire_dict = {question_id1: [question_statement1,answer_statement,
+                                        answer_id,answer_statement,answer_id...],
+                                 question_id2: [question_statement2,answer_statement,
+                                        answer_id,answer_statement,answer_id...]                                    
+                                        }
+        Questions according to user type
     """
+    try:
+        prof = Professor.objects.get(user=request.user)
+        student = None
+    except Professor.DoesNotExist:
+        try:
+            prof = None
+            student = Student.objects.get(user=request.user)
+        except Student.DoesNotExist:
+            student = None
+
+    questionnaire_dict = {}
     for item in settings.DEFAULT_QUESTIONS_ID:
-        qa_set = Questionnaire.objects.filter(question=item)
+        if student:
+            qa_set = Questionnaire.objects.filter(question=item,question__type=2)
+        else:
+            qa_set = Questionnaire.objects.filter(question=item,question__type=1)
         questionnaire_dict[item] = []
         questionnaire_dict[item].append(RatingQuestion.objects.get(pk=item).question_statement)
         for qa in qa_set:
@@ -1081,7 +1099,7 @@ def update_pedagogical_ressources(request, type, id):
         "sori_coder_lesson_resource_khanacademy": sori_coder_lesson_resource_khanacademy,
         "sori_coder_exercice_resource_sesamath": sori_coder_exercice_resource_sesamath,
         "questionnaire": json_questionnaire,
-        "rated_resource": rated_res,
+        "rated_resources": rated_res,
     })
 
     # TODO : TO DELETE
@@ -1923,26 +1941,27 @@ def create_rate(request,type,id):
         json_str = request.POST.get('json_str')
 
         response_data = {}
-        dict = json.loads(json_str)
-        r_id = dict["resource_id"]
-        stars = dict["stars"]
+        try:
+            dict = json.loads(json_str)
+        except ValueError, e:
+            print "Invalid JSON received"
+            return HttpResponse(json.dumps(response_data),content_type="application/json")
+        r_id = int(dict["id"])
         try:
             resource = Resource.objects.get(pk=r_id)
         except Resource.DoesNotExist:
             print "Error: resource doensn't exist"
             return
-        resource.add_star(stars,request.user)
-        for item in dict:
-            if item != "resource_id" and item != "stars":
-                question = RatingQuestion.objects.get(pk=int(item))
-                response_data[question.id] = {}
-                answer = Answer.objects.get(pk=int(dict[item]))
-                resource.add_rating(question=question,answer=answer,user=request.user)
-                #TODO: add average of each answer for each function to json response_data
-
+        stars = 0.0
+        count = 0
+        for item in dict["rated"]:
+            resource.add_rating(question=int(item), answer=float(dict["rated"][item]), user=request.user)
+            count +=1
+            stars += float(dict["rated"][item])
+        if count != 0:
+            resource.add_star(stars/count, request.user)
         # Fill response data with average for each question of that resource
-        for question in response_data:
-            response_data[question] = resource.get_votes_question(question)
+            #EMPTY for now
 
         return HttpResponse(
             json.dumps(response_data),
