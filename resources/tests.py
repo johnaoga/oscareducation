@@ -90,7 +90,6 @@ class Resource_Rating_TestCase(TestCase):
         self.assertEqual(Rating.objects.count(),0)
         """Rate someone elses resource"""
         qr = self.r.add_rating(question=self.q1,answer=self.a1,user=self.prof2.user)
-        self.assertEqual(qr.id,1)
         self.assertEqual(Rating.objects.count(), 1)
 
     def test_update_rating(self):
@@ -100,3 +99,32 @@ class Resource_Rating_TestCase(TestCase):
         qr = self.r.add_rating(question=self.q1, answer=self.a2, user=self.prof2.user)
         self.assertEqual(Rating.objects.count(), 1)
         self.assertEqual(Rating.objects.get(pk=qr.id).answer,self.a2)
+
+class Get_Votes_Quetion(TestCase):
+    def setUp(self):
+        self.q1 = Question.objects.create(question_statement="abba baba", type=0)
+        self.q2 = Question.objects.create(question_statement="Enjoyed", type=0)
+        self.a1 = Answer.objects.create(answer_statement="Yeah")
+        self.a2 = Answer.objects.create(answer_statement="Bee")
+        self.u = User.objects.create(first_name="Bib", last_name="zmy", username='user1')
+        self.u1 = User.objects.create(first_name="Bideb", last_name="mdy", username='user2')
+        self.u2 = User.objects.create(first_name="Bzzfib", last_name="mzy", username='user3')
+        self.u3 = User.objects.create(first_name="Bfezzfib", last_name="mzvey", username='user4')
+        self.r1 = Resource.objects.create(section="test", content='{"kind": "lesson", "title": "Fonctions de référence", "author": "Paul Robaux"}  ')
+        self.d1 = timezone.now()
+        self.qq1 = Questionnaire.objects.create(question=self.q1, answer=self.a1)
+        self.qq2 = Questionnaire.objects.create(question=self.q1, answer=self.a2)
+        self.qq2 = Questionnaire.objects.create(question=self.q2, answer=self.a1)
+        self.qq2 = Questionnaire.objects.create(question=self.q2, answer=self.a2)
+        self.ra1 = Rating.objects.create(resource=self.r1, question=self.q1, answer=self.a1, rated_by=self.u,rated_on=self.d1)
+        self.ra2 = Rating.objects.create(resource=self.r1, question=self.q1, answer=self.a1, rated_by=self.u1,rated_on=self.d1)
+        self.ra3 = Rating.objects.create(resource=self.r1, question=self.q1, answer=self.a2, rated_by=self.u2,rated_on=self.d1)
+        self.ra2 = Rating.objects.create(resource=self.r1, question=self.q2, answer=self.a1, rated_by=self.u3,rated_on=self.d1)
+
+    def test_get_vote(self):
+        dict = self.r1.get_votes_question(question=self.q1)
+        self.assertEqual(dict[self.a1.id],2)
+        self.assertEqual(dict[self.a2.id],1)
+        dict = self.r1.get_votes_question(question=self.q2)
+        self.assertEqual(dict[self.a1.id], 1)
+        self.assertEqual(dict[self.a2.id], 0)

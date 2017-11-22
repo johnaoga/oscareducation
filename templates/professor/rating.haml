@@ -1,0 +1,41 @@
+-load crispy_forms_tags
+-load lesson_tags
+-load rating_tags
+-load static
+-load bootstrap3
+
+%div
+  %img{id: "star{{ resource.id}}",src: "https://d30y9cdsu7xlg0.cloudfront.net/png/431-200.png",style:"height:20px;width:height;"}
+    Note
+:javascript
+  function send_stars(json_s) {
+    /* Function to send new ratings to server and do something with return value
+      json_s should be a json string containing 3 keys: 'id' (resource id), 'comment' and 'rated'.
+      the value associated with the 'rated' key is a json with key the question id and the number
+        of stars votes by to user as value.The 'comment' key is associated to a string value that
+          represents the comment left by the user and id key is the resource id value
+        ex. { "id": "123", "rated": { "1":"2", "2":"3"}, "comment":"I like the way comment work" }
+
+    */
+    try {
+      JSON.parse(json_s);
+    } catch (e){
+      console.log("invalid JSON");
+      return;
+    }
+    $.ajax({
+      url : "rate/", // the endpoint
+      type : "POST", // http method
+      data : { json_str: json_s }, // data sent with the post request
+      // handle a successful response
+      success : function(json_returned) {
+          // Use json to set average for each question
+          console.log("success GET"); // another sanity check
+          // HERE you can use returned json_returned
+      },
+      // handle a non-successful response
+      error : function(xhr,errmsg,err) {
+          console.log(xhr.status + ": b" + xhr.responseText); // provide a bit more info about the error to the console
+      }
+    });
+  };

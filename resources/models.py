@@ -83,7 +83,7 @@ class Resource(models.Model):
             else:
                 return (star_student / student_nb, star_prof / prof_nb)
 
-    def add_rating(self,question,answer,user):
+    def add_rating(self,question,value,user):
         """
         Creates or Modifies a question/answer to a resource by a user
 
@@ -98,14 +98,14 @@ class Resource(models.Model):
         if rating.exists() and len(rating)==1:
             rating = rating.first()
             rating.question = question
-            rating.answer = answer
+            rating.answer = value
             rating.rated_on = timezone.now()
             rating.save()
         elif not rating.exists():
             rating = Rating.objects.create(
                 resource=self,
                 question=question,
-                answer=answer,
+                answer=value,
                 rated_by=user,
                 rated_on=timezone.now()
             )

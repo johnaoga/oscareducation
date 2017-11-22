@@ -56,6 +56,8 @@
               %table.table
                 %tbody
                   %tr
+                    %td{style: "width:100px;"}
+                      -include "professor/rating.haml"
                     %td
                       -if item.optionalName
                         -if item.link|cut:" "|length > 0 and item.mediaType == "link"
@@ -79,7 +81,6 @@
                             fichier
                           %a{href: "{{ MEDIA_URL }}{{ item.file }}", target: "_blank"}
                             {{item.file}}
-                    -include "professor/question.haml"
         -if user.professor and request.user == resource.added_by
           %form.remove-form{method: "POST", action: "{% url 'professor:remove_pedagogical_ressources' type base.id 'resource' resource.id %}"}
             -csrf_token

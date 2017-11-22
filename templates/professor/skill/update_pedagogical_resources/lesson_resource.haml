@@ -212,7 +212,7 @@
                           %button.btn.btn-primary{:name=>"rate", :id=>"#{item.link}"}
                             Appréciation
                           %div{:name=>"container", :id => "container#{item.link}"}
-        -include "professor/question.haml" with resource=resource
+                      -include "professor/rating.haml"
         %form.remove-form{method: "POST", action: "{% url 'professor:remove_pedagogical_ressources' type base.id 'resource' resource.id %}"}
           -csrf_token
           %button.btn.btn-danger.btn-xs.delete{type: "submit"}

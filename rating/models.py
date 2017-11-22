@@ -37,8 +37,8 @@ class Rating(models.Model):
     question = models.ForeignKey('Question')
     """The Question answered for this rating"""
 
-    answer = models.ForeignKey('Answer')
-    """The Answer given to this rating"""
+    answer = models.FloatField()
+    """The value given to this rating"""
 
     rated_by = models.ForeignKey(User)
     """The User who rated"""
@@ -46,18 +46,13 @@ class Rating(models.Model):
     rated_on = models.DateTimeField()
     """Date of rating"""
 
-    def number_votes_answer(self,resource,question,answer):
+    def number_votes_answer(self,resource,question):
         """Get the number of votes for answer at a question from a resource"""
-        r = Rating.objects.filter(resource=resource,question=question,answer=answer)
+        r = Rating.objects.filter(resource=resource,question=question)
         return r.entry_set.count()
 
     class Meta:
         unique_together = ('resource','question','rated_by')
-
-
-class Answer(models.Model):
-    answer_statement = models.TextField()
-    """The Answer statement"""
 
 
 class Question(models.Model):
@@ -66,10 +61,3 @@ class Question(models.Model):
 
     type = models.IntegerField()
     """The type of question (user for prof vs student)"""
-
-class Questionnaire(models.Model):
-    question = models.ForeignKey('Question', null=True)
-    """The question"""
-
-    answer = models.ForeignKey('Answer', null=True)
-    """The Answer"""
