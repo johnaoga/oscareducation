@@ -1,51 +1,58 @@
 -load crispy_forms_tags
 -load lesson_tags
+-load rating_tags
 -load static
 -load bootstrap3
 
--if resource.added_by != request.user and resource.id not in rated_resource
-  %body
-    %header.header.text-center
-      %link{:href => "{% static 'StarRating.css' %}", :rel => "stylesheet", :type => "text/css"}/
-      %link{:href => "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css", :rel => "stylesheet"}/
-    %section.rating-widget
-      #starId.rating-stars.text-center{:float => "left"}
-        %ul#stars
-          %li.star{:data-value => "1", :title => "Mauvais"}
-            %i.fa.fa-star.fa-fw
-          %li.star{:data-value => "2", :title => "Passable"}
-            %i.fa.fa-star.fa-fw
-          %li.star{:data-value => "3", :title => "Satisfaisant"}
-            %i.fa.fa-star.fa-fw
-          %li.star{:data-value => "4", :title => "Bien"}
-            %i.fa.fa-star.fa-fw
-          %li.star{:data-value => "5", :title => "Excellent"}
-            %i.fa.fa-star.fa-fw
-      #Icon{:float => "left", :style => "display in-line"}
-        #IconText
-          %img{src: "{% static 'img/icons/star1.png' %}", :style => "width: 100%; height: 100%;"}/
-        #fillIcon
-          %img{src: "{% static 'img/icons/star2.png' %}", :style => "width: 5em; height: 5em;"}/
-    %section.questionnaire
-      %input{id:"resource_id", type: "hidden", value: "{{ resource.id }}"}
-      %input{id:"json_q", type: "hidden", value: "{{ questionnaire }}"}
-      %input{id:"rated", type: "hidden", value: "{{ rated_resource }}"}
 
--if resource.added_by == request.user
-  %body{id: "post_user"}
+%div.container{id: "note{{ resource.id}}", title:"Dismissible popover", data-toggle:"popover", data-trigger:"focus", data-content:"Click anywhere in the document to close this popover"}
+  %img{id: "star{{ resource.id}}",src: "https://d30y9cdsu7xlg0.cloudfront.net/png/431-200.png", :style => "width: 2%; height: 2%;",data-toggle:"clickover",data-placement:"top"}
+    Note
+
+-if resource.added_by != request.user
+  -if resource.id not in rated_resources
+    %body{id: "rate"}
+      %header.header.text-center
+        %link{:href => "{% static 'StarRating.css' %}", :rel => "stylesheet", :type => "text/css"}/
+      %section.rating-widget
+        #starId.rating-stars.text-center{:float => "left"}
+          %ul#stars
+            %li.star{:data-value => "1", :title => "Mauvais"}
+              %i.fa.fa-star.fa-fw
+            %li.star{:data-value => "2", :title => "Passable"}
+              %i.fa.fa-star.fa-fw
+            %li.star{:data-value => "3", :title => "Satisfaisant"}
+              %i.fa.fa-star.fa-fw
+            %li.star{:data-value => "4", :title => "Bien"}
+              %i.fa.fa-star.fa-fw
+            %li.star{:data-value => "5", :title => "Excellent"}
+              %i.fa.fa-star.fa-fw
+        #Icon{:float => "left", :style => "display in-line"}
+          #IconText
+            %img{src: "{% static 'img/icons/star1.png' %}", :style => "width: 100%; height: 100%;"}/
+          #fillIcon
+            %img{src: "{% static 'img/icons/star2.png' %}", :style => "width: 5em; height: 5em;"}/
+  -else
+    %body
+      .content Resource is already rated by you. your vote: {{ rated_resources|get_item:resource.id|get_item:"star" }} on {{ rated_resources|get_item:resource.id|get_item:"rated_on" }}
+        total stars: {% get_average_prof resource.id %}
+-else
+  %body{id: "owner"}
     .content You can't see the rating form. You are Owner of this resource
--if resource.id in rated_resource and resource.added_by != request.user
-  .content Already rated by you! (show filled in rating with total votes)
 
-%script{:src => "{% static 'jquery-3.2.1.min.js' %}", :type => "text/javascript"}
 :javascript
       var json_data;
       var build = false;
       var tot_stars;
+
+      var popupElement = '<div class="btn-group btn-toggle"><button class="btn btn-sm btn-info">On</button><button class="btn btn-sm btn-primary active">Off</button></div>';
+
+
       $(document).ready(function(){
 
-        	/* We start by hiding the questionnaire, it becomes visible once the number of starts are selected */
+        $('[data-toggle="popover"]').popover();
 
+        /* We start by hiding the questionnaire, it becomes visible once the number of starts are selected */
       	var fill = 0;
       	var update = setInterval(function()
       	{
@@ -55,20 +62,14 @@
           	if (fill == 60) {
               	clearInterval(update);
           }
-
       	}, 75);
-
-        	$("#buttonSubmit").hide()
-
+        $("#buttonSubmit").hide();
       	/* Default value for star rating and responses*/
-      	var ratingValue = -1
-      	var resp1 = "?"
-      	var resp2 = "?"
-      	var resp3 = "?"
+      	var ratingValue = -1;
 
         	/* Handles everything when mouse over star rating */
-        	$('#stars li').on('mouseover', function(){
-          var onStar = parseInt($(this).data('value'), 10); // The star currently mouse on
+        $('#stars li').on('mouseover', function(){
+        var onStar = parseInt($(this).data('value'), 10); // The star currently mouse on
 
           // Now highlight all the stars that's not after the current hovered star
           $(this).parent().children('li.star').each(function(e){
@@ -81,18 +82,15 @@
           });
 
         	}).on('mouseout', function(){
-          	$(this).parent().children('li.star').each(function(e){
+          	  $(this).parent().children('li.star').each(function(e){
             	$(this).removeClass('hover');
-          	});
+          	  });
         	});
-
 
         	/* Handles everything when we click on the stars */
         	$('#stars li').on('click', function(){
-
         		// We start by showing the questionnaire
         		make_questionnaire();
-        		//$(".questionnaire").show()
         		$("#buttonSubmit").show();
 
           	var onStar = parseInt($(this).data('value'), 10); // The star currently selected
@@ -106,7 +104,7 @@
             		$(stars[i]).addClass('selected');
           	}
 
-          	// ratingValue contains the current value attribuated
+          	/* ratingValue contains the current value attributed */
           	ratingValue = parseInt($('#stars li.selected').last().data('value'), 10);
           	tot_stars = ratingValue;
         	});
@@ -115,6 +113,9 @@
         		window.prompt("some text", "default text");
         	});
       });
+      function click() {
+        console.log(this.id);
+      };
       function create_rate(json_s) {
           $.ajax({
               url : "rate/", // the endpoint
@@ -122,10 +123,10 @@
               data : { json_str: json_s }, // data sent with the post request
 
               // handle a successful response
-              success : function(json_dat) {
+              success : function(json_returned) {
                   // Use json to set average for each question
                   console.log("success GET"); // another sanity check
-                  show_average(json_dat);
+                  show_average(json_returned); // use returned json by server
               },
 
               // handle a non-successful response
@@ -140,10 +141,12 @@
         if (build) {
             return;
         }
-        // USE "{{geodata|escapejs}}"
-        json = document.getElementById('json_q').value;
         var body = document.getElementsByTagName('section')[0];
-        json_data = JSON.parse(json);
+        var json_q = "{{ questionnaire|escapejs }}";
+        json_data = JSON.parse(json_q);
+        if (isEmpty(json_data) || json_data.size() < 1) {
+          return;
+        }
         var question_data = json_data;
 
         for (var key in question_data) {
@@ -166,7 +169,7 @@
           parentElement.appendChild(form);
           form.innerHTML= array[0]+'<br>';
 
-          for (i=1;i<array.length;i+=1) {
+          for (i=1;i<array.length;i+=2) {
               var a_id = array[i+1];
               var a = array[i];
               var div = document.createElement('div');
@@ -183,19 +186,16 @@
               label.for = a_id+"|"+question_id;
               label.innerHTML = a;
 
-
               form.appendChild(div);
               div.appendChild(input);
               div.appendChild(label);
-              i+=1;
           }
       };
       function submit(stars) {
           var obj = new Object(); // will be used to create new json
           var select_cnt=0;
           var question_cnt=0;
-          resource_id = document.getElementById('resource_id').value;
-          obj['resource_id'] = resource_id;
+          obj['resource_id'] = {{ resource.id }};
           obj['stars'] = stars;
           for (var key in json_data) {
               for (var answer in json_data[key]) {
