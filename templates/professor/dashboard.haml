@@ -46,14 +46,14 @@
 
   .container-fluid.boxclasse
     %center
-      .txt
+      .txt{:id => "stat"}
 
             - if name == nil
                 Vous n'avez pas encore de statut.
             - else
                 Votre statut est #{name}.
       .col-md-30
-        %img{src: "#{icon}", "height": "100"}
+        %img{src: "#{icon}", "height": "100", id: "statIcon"}
 
   %link{href: "{% static 'css/statuspopup.css' %}", rel: "stylesheet"}
   -if status_changed
