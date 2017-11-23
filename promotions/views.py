@@ -79,14 +79,14 @@ def dashboard(request):
             try:
                 obj["icon"]
             except KeyError:
-                obj["icon"] = None
+                obj["icon"] = "/static/img/status6.png"
             obj2 = prof.status_changed
             prof.status_changed = False
             prof.save()
         else:
             obj = {}
             obj["name"] = None
-            obj["icon"] = None
+            obj["icon"] = "/static/img/status6.png"
     return render(request, "professor/dashboard.haml", {
         "lessons": Lesson.objects.filter(professors=request.user.professor).annotate(Count("students")).select_related(
             "stage"),
