@@ -130,10 +130,15 @@ class Resource(models.Model):
     def get_votes_question(self,question):
         """
 
-        :param question: the question we want to get all the answer votes from
-        :return: a dictionnary with the answer id as key and the number of votes as value for a specific question on a resource
+        :param question: the question
+        :return: the number of people who voted for a certain question.
+                    None is no question is liked to the resource
         """
-        return None
+        r = Rating.objects.filter(resource=self,question=question)
+        if r.exists():
+            return r.entry_set.count()
+        else:
+            return None
 
 
 #khanAcademy video reference data parsed from source url

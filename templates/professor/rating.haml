@@ -1,15 +1,94 @@
 -load crispy_forms_tags
--load lesson_tags
 -load rating_tags
 -load static
 -load bootstrap3
+%meta{:content => "text/html;charset=UTF-8", :http-equiv => "Content-Type"}/
 
 %div
   %img{id: "star{{ resource.id}}",src: "https://d30y9cdsu7xlg0.cloudfront.net/png/431-200.png",style:"height:20px;width:height;"}
     Note
+  %link{href: "{% static 'StarRating.css' %}",rel: "stylesheet"}
+  %link{href: "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css",rel: "stylesheet"}
+  %div{id:"{{resource.id}}"}
+    %p
+      Est-ce que la ressource est exacte?
+    %div{id: "starId1{{resource.id}}", class:"rating-stars", style: "text-align:center;"}
+      %ul#stars
+        %b pas du tout
+        %li.star{:data-value => "1", :title => "Mauvais"}
+          %i.fa.fa-star.fa-fw
+        %li.star{:data-value => "2", :title => "Passable"}
+          %i.fa.fa-star.fa-fw
+        %li.star{:data-value => "3", :title => "Satisfaisant"}
+          %i.fa.fa-star.fa-fw
+        %li.star{:data-value => "4", :title => "Bien"}
+          %i.fa.fa-star.fa-fw
+        %li.star{:data-value => "5", :title => "Excellent"}
+          %i.fa.fa-star.fa-fw
+        %b excellente
+    %p
+      Est-ce que la ressource est complète?
+    %div{id: "starId2|{{resource.id}}", class:"rating-stars", style: "text-align:center;"}
+      %ul#stars
+        %b pas du tout
+        %li.star{:data-value => "1", :title => "Mauvais"}
+          %i.fa.fa-star.fa-fw
+        %li.star{:data-value => "2", :title => "Passable"}
+          %i.fa.fa-star.fa-fw
+        %li.star{:data-value => "3", :title => "Satisfaisant"}
+          %i.fa.fa-star.fa-fw
+        %li.star{:data-value => "4", :title => "Bien"}
+          %i.fa.fa-star.fa-fw
+        %li.star{:data-value => "5", :title => "Excellent"}
+          %i.fa.fa-star.fa-fw
+        %b excellente
+    %p
+      Est-ce que la ressource est compréhensible?
+    %div{id: "starId3|{{resource.id}}", class:"rating-stars", style: "text-align:center;"}
+      %ul#stars
+        %b pas du tout
+        %li.star{:data-value => "1", :title => "Mauvais"}
+          %i.fa.fa-star.fa-fw
+        %li.star{:data-value => "2", :title => "Passable"}
+          %i.fa.fa-star.fa-fw
+        %li.star{:data-value => "3", :title => "Satisfaisant"}
+          %i.fa.fa-star.fa-fw
+        %li.star{:data-value => "4", :title => "Bien"}
+          %i.fa.fa-star.fa-fw
+        %li.star{:data-value => "5", :title => "Excellent"}
+          %i.fa.fa-star.fa-fw
+        %b excellente
+    %p
+      Est-ce que la ressource est pertinante?
+    %div{id: "starId4|{{resource.id}}", class:"rating-stars", style: "text-align:center;"}
+      %ul#stars
+        %b pas du tout
+        %li.star{:data-value => "1", :title => "Mauvais"}
+          %i.fa.fa-star.fa-fw
+        %li.star{:data-value => "2", :title => "Passable"}
+          %i.fa.fa-star.fa-fw
+        %li.star{:data-value => "3", :title => "Satisfaisant"}
+          %i.fa.fa-star.fa-fw
+        %li.star{:data-value => "4", :title => "Bien"}
+          %i.fa.fa-star.fa-fw
+        %li.star{:data-value => "5", :title => "Excellent"}
+          %i.fa.fa-star.fa-fw
+        %b excellente
+    %br/
+    %p
+      Commentaire (optionel):
+      %br/
+      %textarea{name: "area1", cols: "40",rows:"10"}
+
+    %button.button{id: "buttonSubmit{{resource.id}}"}
+      Soumettre
+
+%script{src: "{% static 'jquery-3.2.1.min.js' %}"}
 :javascript
+  var ratingValue1, ratingValue2, ratingValue3, ratingValue4 = -1;
+  var fill_board = 0;
   function send_stars(json_s) {
-    /* Function to send new ratings to server and do something with return value
+    /* Function to send new ratings to server and do something with return valueconsole.log(ratingValue1);
       json_s should be a json string containing 3 keys: 'id' (resource id), 'comment' and 'rated'.
       the value associated with the 'rated' key is a json with key the question id and the number
         of stars votes by to user as value.The 'comment' key is associated to a string value that
@@ -39,3 +118,130 @@
       }
     });
   };
+  function buttonClick(id) {
+   		  console.log(id);
+		  console.log(parent().attr("id"));
+		  console.log(ratingValue1);
+		  console.log(ratingValue2);
+		  console.log(ratingValue3);
+		  console.log(ratingValue4);
+  }
+  $(document).ready(function(){
+		var update_board = setInterval(function() {
+			fill_board += 1;
+			$('#fillBoard').css('height', (fill_board+'%'));
+	    	//$('#fillIcon').css('margin-top', ((100 - fill)+'%'));
+	    	if (fill_board == 65) {	clearInterval(update_board);}
+	    }, 10);
+		var fill_hat = 0;
+		var update_hat = setInterval(function() {
+			fill_hat += 1;
+			$('#fillHat').css('height', (fill_hat+'%'));
+	    	//$('#fillIcon').css('margin-top', ((100 - fill)+'%'));
+	    	if (fill_hat == 35) { clearInterval(update_hat); }
+	    }, 10);
+		/* Default value for star rating and responses*/
+		/* Handles everything when mouse over star rating */
+		$('#stars li').on('mouseover', function(){
+	    var onStar = parseInt($(this).data('value'), 10); // The star currently mouse on
+	    // Now highlight all the stars that's not after the current hovered star
+	    $(this).parent().children('li.star').each(function(e){
+	    	if (e < onStar) { $(this).addClass('hover'); }
+	    	else { $(this).removeClass('hover'); }
+	    });
+	}).on('mouseout', function(){
+		$(this).parent().children('li.star').each(function(e){
+			$(this).removeClass('hover');
+		});
+	});
+	$("#buttonSubmit"+{{resource.id}}).on('click',function() {
+      var id = $(this).parent().attr('id');
+          console.log(id);
+
+		  var children = $(this).parent().children();
+		  var p = "starId1"+{{resource.id}}
+		  var stars = $(this).parent().children(p);
+          console.log();
+
+
+		  for (var i=0;i<children.size();i++) {
+		      if(children.get(i).id == 'starId1|{{resource.id}}')
+                {
+                ratingValue1 = parseInt($('#stars li.selected').last().data('value'), 10);}
+              if (children.get(i).id == 'starId2|{{resource.id}}')
+                    {ratingValue2 = parseInt($('#stars li.selected').last().data('value'), 10);}
+             if (children.get(i).id == 'starId3|{{resource.id}}')
+                        { ratingValue3 = parseInt($('#stars li.selected').last().data('value'), 10);}
+             if (children.get(i).id == 'starId4|{{resource.id}}')
+                            { ratingValue4 = parseInt($('#stars li.selected').last().data('value'), 10);}
+		  }
+
+		  console.log(ratingValue1);
+		  console.log(ratingValue2);
+		  console.log(ratingValue3);
+		  console.log(ratingValue4);
+
+
+
+	});
+	/* Handles everything when we click on the stars */
+    $('#stars li').on('click', function(){
+      var onStar = parseInt($(this).data('value'), 10); // The star currently selected
+      var stars = $(this).parent().children('li.star');
+            console.log($(this).parent().parent());
+	    	for (i = 0; i < stars.length; i++) {
+	    		$(stars[i]).removeClass('selected');
+	    	}
+	    	for (i = 0; i < onStar; i++) {
+	    		$(stars[i]).addClass('selected');
+	    	}
+	    });
+	$('[data-popup-open]').on('click', function(e)  {
+		var targeted_popup_class = jQuery(this).attr('data-popup-open');
+		$('[data-popup="' + targeted_popup_class + '"]').fadeIn(350);
+	        $("#chartContainer").CanvasJSChart({ //Pass chart options
+	        	animationEnabled: true,
+	        	theme: "light1",
+	        	axisY: {
+	        		title: "Nombre d'étoiles"
+	        	},
+	        	data: [
+			    	{
+						type: "column", //change it to column, spline, line, pie, etc
+						dataPoints: [
+							{ y: 3.5, label: "exactitude"},
+							{ y: 2.7, label: "complétude"},
+							{ y: 4.2, label: "compréhensibilité"},
+							{ y: 1.9, label: "pertinance"}
+						]
+					}
+				]
+			});
+	        chart.render();
+	        e.preventDefault();
+	    });$('[data-popup-open]').on('click', function(e)  {
+		var targeted_popup_class = jQuery(this).attr('data-popup-open');
+		$('[data-popup="' + targeted_popup_class + '"]').fadeIn(350);
+	        $("#chartContainer").CanvasJSChart({ //Pass chart options
+	        	animationEnabled: true,
+	        	theme: "light1",
+	        	axisY: {
+	        		title: "Nombre d'étoiles"
+	        	},
+	        	data: [
+			    	{
+						type: "column", //change it to column, spline, line, pie, etc
+						dataPoints: [
+							{ y: 3.5, label: "exactitude"},
+							{ y: 2.7, label: "complétude"},
+							{ y: 4.2, label: "compréhensibilité"},
+							{ y: 1.9, label: "pertinance"}
+						]
+					}
+				]
+			});
+	        chart.render();
+	        e.preventDefault();
+	    });
+
+  });

@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.core.validators import MaxValueValidator, MinValueValidator
+
 
 class Star_rating(models.Model):
     resource = models.ForeignKey('resources.Resource')
@@ -37,7 +39,7 @@ class Rating(models.Model):
     question = models.ForeignKey('Question')
     """The Question answered for this rating"""
 
-    answer = models.FloatField()
+    answer = models.FloatField(validators = [MinValueValidator(0.0), MaxValueValidator(5.0)])
     """The value given to this rating"""
 
     rated_by = models.ForeignKey(User)
@@ -46,8 +48,16 @@ class Rating(models.Model):
     rated_on = models.DateTimeField()
     """Date of rating"""
 
-    def number_votes_answer(self,resource,question):
-        """Get the number of votes for answer at a question from a resource"""
+    comment = models.CharField(max_length=300,null=True,blank=True)
+    """Comment associated with rating"""
+
+    def number_votes_question(self,resource,question):
+        """
+
+        :param resource: teh resource we want the votes from
+        :param question: the question we want the votes from
+        :return: return the number of people who voted for the question on th reosource
+        """
         r = Rating.objects.filter(resource=resource,question=question)
         return r.entry_set.count()
 
