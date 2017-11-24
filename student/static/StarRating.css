@@ -64,6 +64,10 @@ border-radius: 4px;
   font-size:14px;
 }
 
+.hidden {
+    display:none;
+}
+
 .button {
     background-color: #EF6C00;
     border: none;

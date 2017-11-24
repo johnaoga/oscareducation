@@ -127,6 +127,7 @@
     });
   };
   $(document).ready(function(){
+        $("#"+{{resource.id}}).hide();
 		var update_board = setInterval(function() {
 			fill_board += 1;
 			$('#fillBoard').css('height', (fill_board+'%'));
@@ -180,7 +181,10 @@
 
 	});
 	$("#big"+{{resource.id}}).on('click',function() {
-	  console.log('show Questionnaire ');
+	  if ($("#"+{{resource.id}}).hidden()) {
+	    $("#"+{{resource.id}}).parent().parent().parent().parent().parent().append($("#"+{{resource.id}}));
+	    $("#"+{{resource.id}}).show();
+	   }
 	});
 	/* Handles everything when we click on the stars */
     $('#stars li').on('click', function(){
