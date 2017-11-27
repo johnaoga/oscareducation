@@ -204,6 +204,36 @@
                           %a{href: "{{ MEDIA_URL }}{{ item.file }}", target: "_blank"}
                             {{item.file}}
                           %div{:name=>"container", :id => "container#{item.link}"}
+        %div.small{id:"big{{resource.id}}", style:"cursor: default;"}
+          %img{id: "star{{ resource.id}}",src: "https://d30y9cdsu7xlg0.cloudfront.net/png/431-200.png",style:"height:20px;width:height;"}
+            Note
+          %link{href: "{% static 'StarRating.css' %}",rel: "stylesheet"}
+          %link{href: "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css",rel: "stylesheet"}
+          -if resource.id not in rated_resources and resource.added_by != request.user
+            %script{src: "{% static 'jquery-3.2.1.min.js' %}"}
+            :javascript
+              var question = null;
+              $(document).ready(function(){
+              $("#big"+{{resource.id}}).on('click',function() {
+                if (question == null) {
+                   $.get("{% static 'question.html' %}").success(function(data) {
+                   $("#big"+{{resource.id}}).parent().append(data);
+                   $("#big"+{{resource.id}}).parent().parent().find("#questions").attr("rid",{{resource.id}});
+                   question = $("#big"+{{resource.id}}).parent().parent().find("#questions");
+                   });
+                } else {
+                 question.remove();
+                 question=null;
+                }
+               });
+              });
+          -else
+            -if resource.added_by == request.user
+              %div.small{id:"thanks{{resouce.id}}", style:"color: red;"}
+                Vous ne pouvez pas noter votre resource
+            -else
+              %div.small{id:"thanks{{resouce.id}}"}
+                Merci pour votre vote
         %form.remove-form{method: "POST", action: "{% url 'professor:remove_pedagogical_ressources' type base.id 'resource' resource.id %}"}
           -csrf_token
           %button.btn.btn-danger.btn-xs.delete{type: "submit"}
