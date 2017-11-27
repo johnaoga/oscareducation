@@ -24,7 +24,7 @@ class Professor(models.Model):
     code = models.BigIntegerField(null=True,blank=True)
     nbr_4_star_res = models.IntegerField(null=True)
     status = JSONField(null=True,blank=True)
-    status_changed = models.BooleanField(default=False)
+    status_changed = models.IntegerField(default=0)
 
     def print_something(self):
         print(self.nbr_4_star_res)
@@ -34,21 +34,32 @@ class Professor(models.Model):
         self.user.first_name, self.user.last_name)) if self.user.first_name or self.user.last_name else self.user.username
 
     def update_status(self):
+        if self.status is not None:
+            obj_status = json.loads(self.status)
+        else:
+            obj_status = None
         is_top = False
         top = None
         if Top_contributor.objects.count() != 0:
             top = Top_contributor.objects.get(pk=1)
 
         if (top is None):
-            if self.nbr_4_star_res > 4:
+            if self.nbr_4_star_res > 19:
                 top = Top_contributor.objects.create(professor=self)
                 self.status = json.dumps(Status("Top Contributor", "/static/img/status5.png").__dict__)
+                self.status_changed = 1
                 is_top = True
                 self.save()
         else:
             top_prof = top.professor
             #print("top prof: " + str(top_prof.nbr_4_star_res) + "    me: " + str(self.nbr_4_star_res))
+
             if top_prof.nbr_4_star_res < self.nbr_4_star_res:
+                prof = Professor.objects.get(id=top.professor_id)
+                prof.status_changed = -1
+                prof.status = json.dumps(Status("Super Contributor", "/static/img/status4.png").__dict__)
+                prof.save()
+
                 #print("update top prof")
                 self.status = json.dumps(Status("Top Contributor", "/static/img/status5.png").__dict__)
                 top.professor = self
@@ -60,13 +71,21 @@ class Professor(models.Model):
 
         if not is_top:
             if self.nbr_4_star_res >= 1 and self.nbr_4_star_res < 4:
-                self.status = json.dumps(Status("Contributor", "/static/img/status1.png").__dict__)
+                if obj_status is None or obj_status['name'] != 'Contributor':
+                    self.status = json.dumps(Status("Contributor", "/static/img/status1.png").__dict__)
+                    self.status_changed = 1
             elif self.nbr_4_star_res >= 4 and self.nbr_4_star_res < 9:
-                self.status = json.dumps(Status("Motivated Contributor", "/static/img/status2.png").__dict__)
+                if obj_status is None or obj_status['name'] != 'Motivated Contributor':
+                    self.status = json.dumps(Status("Motivated Contributor", "/static/img/status2.png").__dict__)
+                    self.status_changed = 1
             elif self.nbr_4_star_res >= 9 and self.nbr_4_star_res < 19:
-                self.status = json.dumps(Status("Advanced Contributor", "/static/img/status3.png").__dict__)
+                if obj_status is None or obj_status['name'] != 'Advanced Contributor':
+                    self.status = json.dumps(Status("Advanced Contributor", "/static/img/status3.png").__dict__)
+                    self.status_changed = 1
             elif self.nbr_4_star_res >= 19:
-                self.status = json.dumps(Status("Super Contributor", "/static/img/status4.png").__dict__)
+                if obj_status is None or obj_status['name'] != 'Super Contributor':
+                    self.status = json.dumps(Status("Super Contributor", "/static/img/status4.png").__dict__)
+                    self.status_changed = 1
             self.save()
 
         """"statuss = Professor_status.objects.filter(min_contrib__lte=self.nbr_4_star_res)

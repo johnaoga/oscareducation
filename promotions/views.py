@@ -81,7 +81,7 @@ def dashboard(request):
             except KeyError:
                 obj["icon"] = "/static/img/status6.png"
             obj2 = prof.status_changed
-            prof.status_changed = False
+            prof.status_changed = 0
             prof.save()
         else:
             obj = {}
