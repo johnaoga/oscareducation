@@ -127,7 +127,9 @@
                             // handle a successful response
                             success : function(json_returned) {
                                 // Use json to set average for each question
-                                console.log("success GET"); // another sanity check
+                                console.log("success GET"+json_returned); // another sanity check
+                                $(document).find("#questions").html("Votes: <br>"+json_returned);
+                                $(document).parent().addClass('voted');
                                 // HERE you can use returned json_returned
                             },
                             // handle a non-successful response
@@ -185,9 +187,7 @@
                               r["4"] = star4;
                               json["rated"] = r;
                               send_stars(JSON.stringify(json));
-                              $(this).parent().parent().parent().parent().find("#questions").fadeOut();
                             }
-
                           });
                           /* Handles everything when we click on the stars */
                           $('#stars li').on('click', function(){

@@ -1982,7 +1982,7 @@ def create_rate(request,type,id):
             #EMPTY for now
 
         return HttpResponse(
-            json.dumps(response_data),
+            json.dumps(json.dumps(response_data)),
             content_type="application/json"
         )
     else:
