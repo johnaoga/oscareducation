@@ -92,16 +92,26 @@
               var question = null;
               $(document).ready(function(){
               $("#big"+{{resource.id}}).on('click',function() {
-                if (question == null) {
-                   $.get("{% static 'question.html' %}").success(function(data) {
-                   $("#big"+{{resource.id}}).parent().append(data);
-                   $("#big"+{{resource.id}}).parent().parent().find("#questions").attr("rid",{{resource.id}});
-                   question = $("#big"+{{resource.id}}).parent().parent().find("#questions");
-                   });
-                } else {
-                 question.remove();
-                 question=null;
-                }
+                var q = $(document).find("#questions");
+                if (q == undefined) { // if #questions already present, remove it and show questions at other place
+                  if (question == null) {
+                     $.get("{% static 'question.html' %}").success(function(data) {
+                     $("#big"+{{resource.id}}).parent().append(data);
+                     $("#big"+{{resource.id}}).parent().parent().find("#questions").attr("rid",{{resource.id}});
+                     question = $("#big"+{{resource.id}}).parent().parent().find("#questions");
+                     });
+                  } else {
+                   question.remove();
+                   question=null;
+                  }
+                 }else {
+                    q.remove();
+                    $.get("{% static 'question.html' %}").success(function(data) {
+                     $("#big"+{{resource.id}}).parent().append(data);
+                     $("#big"+{{resource.id}}).parent().parent().find("#questions").attr("rid",{{resource.id}});
+                     question = $("#big"+{{resource.id}}).parent().parent().find("#questions");
+                     });
+                 }
                });
               });
           -else

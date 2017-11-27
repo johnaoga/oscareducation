@@ -113,6 +113,7 @@
                               ex. { "id": "123", "rated": { "1":"2", "2":"3"}, "comment":"I like the way comment work" }
 
                           */
+                          console.log("fefef");
                           try {
                             JSON.parse(json_s);
                           } catch (e){
@@ -183,8 +184,8 @@
                               r["3"] = star3;
                               r["4"] = star4;
                               json["rated"] = r;
-                              console.log(json);
-                              //send_stars(JSON.stringify(obj));
+                              send_stars(JSON.stringify(json));
+                              $(this).parent().parent().parent().parent().find("#questions").fadeOut();
                             }
 
                           });

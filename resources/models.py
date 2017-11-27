@@ -143,7 +143,7 @@ class Resource(models.Model):
         """
         r = Rating.objects.filter(resource=self,question=question)
         if r.exists():
-            return r.entry_set.count()
+            return r.count();
         else:
             return 0
 
