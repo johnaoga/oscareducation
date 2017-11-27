@@ -56,11 +56,18 @@
         %img{src: "#{icon}", "height": "100", id: "statIcon"}
 
   %link{href: "{% static 'css/statuspopup.css' %}", rel: "stylesheet"}
-  -if status_changed
+  -if status_changed == 1
     .pop
       %center
         %h1 Félicitations !
         %img{src: "#{icon}", "height": "100", }
         %p Vous êtes maintenant #{name} !
+  -if status_changed == -1
+    .pop
+      %center
+        %h1 Dommage !
+        %img{src: "#{icon}", "height": "100", }
+        %p Vous êtes maintenant #{name} !
+
   %script{src: "{% static 'js/jquery.min.js' %}"}
   %script{src: "{% static 'js/statuspopup.js' %}"}
