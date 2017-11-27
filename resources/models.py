@@ -23,8 +23,7 @@ class Resource(models.Model):
     modified_at = models.DateTimeField(auto_now=True)
     added_by = models.ForeignKey(User, null=True)
 
-
-    def add_star(self, rate, user):
+    def add_star(self,rate,user,comment=""):
         """
         Creates or modifies the star rating for a resource by a user
 
@@ -38,9 +37,16 @@ class Resource(models.Model):
         if star.exists() and len(star) == 1:
             star= star.first()
             star.star = rate
+            star.comment = comment
             star.save()
         elif not star.exists() and len(star) == 0:
-            star = Star_rating.objects.create(resource=self,star=rate,rated_by=user,rated_on=timezone.now())
+            star = Star_rating.objects.create(
+                resource=self,
+                star=rate,
+                rated_by=user,
+                rated_on=timezone.now(),
+                comment=comment
+            )
         else:
             #Error
             return None
@@ -82,6 +88,7 @@ class Resource(models.Model):
                 return (star_student / student_nb,0)
             else:
                 return (star_student / student_nb, star_prof / prof_nb)
+
 
     def add_rating(self,question,value,user):
         """
@@ -132,13 +139,13 @@ class Resource(models.Model):
 
         :param question: the question
         :return: the number of people who voted for a certain question.
-                    None is no question is liked to the resource
+                    0 is no question is liked to the resource
         """
         r = Rating.objects.filter(resource=self,question=question)
         if r.exists():
-            return r.entry_set.count()
+            return r.count();
         else:
-            return None
+            return 0
 
 
 #khanAcademy video reference data parsed from source url

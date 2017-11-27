@@ -19,14 +19,8 @@ class Star_rating(models.Model):
     rated_on = models.DateTimeField()
     """The date when the star rating was given"""
 
-    def add_stars(self,stars,resource,user):
-        """Add stars and saves all info to DB"""
-        self.star = stars
-        self.resource = resource
-        self.rated_by = user
-        self.rated_on = timezone.now()
-        self.save()
-        return
+    comment = models.CharField(max_length=300,null=True,blank=True)
+    """Comment associated with star rating"""
 
     class Meta:
         unique_together = ('resource','rated_by')
@@ -48,8 +42,6 @@ class Rating(models.Model):
     rated_on = models.DateTimeField()
     """Date of rating"""
 
-    comment = models.CharField(max_length=300,null=True,blank=True)
-    """Comment associated with rating"""
 
     def number_votes_question(self,resource,question):
         """

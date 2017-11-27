@@ -51,7 +51,7 @@ import csv
 from django.http import JsonResponse
 from users.models import Student, Professor
 from rating.models import Question as RatingQuestion
-from rating.models import Rating, Star_rating
+from rating.models import Rating, Star_rating, Question
 from django.conf import settings
 from django.forms import model_to_dict
 
@@ -1951,6 +1951,7 @@ def enseign_trans(request):
 def create_rate(request,type,id):
     if request.method == 'POST':
         json_str = request.POST.get('json_str')
+        print "working"
 
         response_data = {}
         try:
@@ -1967,11 +1968,16 @@ def create_rate(request,type,id):
         stars = 0.0
         count = 0
         for item in dict["rated"]:
-            resource.add_rating(question=int(item), answer=float(dict["rated"][item]), user=request.user)
+            q = Question.objects.get(pk=int(item))
+            resource.add_rating(question=q, value=float(dict["rated"][item]), user=request.user)
             count +=1
             stars += float(dict["rated"][item])
+            response_data[int(item)] = resource.get_votes_question(question=q)
         if count != 0:
-            resource.add_star(stars/count, request.user)
+            if dict["comment"].strip() != "":
+                resource.add_star(stars/count, request.user,comment=dict["comment"].strip())
+            else:
+                resource.add_star(stars/count, request.user)
         # Fill response data with average for each question of that resource
             #EMPTY for now
 
