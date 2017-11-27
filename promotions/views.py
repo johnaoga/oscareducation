@@ -1970,8 +1970,12 @@ def create_rate(request,type,id):
             resource.add_rating(question=int(item), answer=float(dict["rated"][item]), user=request.user)
             count +=1
             stars += float(dict["rated"][item])
+            response_data[int(item)] = resource.get_votes_question(question=int(item))
         if count != 0:
-            resource.add_star(stars/count, request.user)
+            if dict["comment"].strip() != "":
+                resource.add_star(stars/count, request.user,comment=dict["comment"].strip())
+            else:
+                resource.add_star(stars/count, request.user)
         # Fill response data with average for each question of that resource
             #EMPTY for now
 
