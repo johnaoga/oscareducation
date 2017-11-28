@@ -72,7 +72,7 @@
 			</div>
 		</p>
 		<p class="lead">
-			Est-ce que la ressource est pertinante?
+			Est-ce que la ressource est pertinente?
 			<div id= "starId4" class='rating-stars text-center'>
 				<ul id='stars'>
 					<b class="small">pas du tout</b> 
@@ -96,7 +96,7 @@
 			</div>
 		</p>
 		<p class="small">
-			Commentaire (optionel): <br>
+			Commentaire (optionnel): <br>
 			<textarea id="comment" cols="30" rows="7" maxlength="300"></textarea>
 		</p>
 		<button class="button" id='buttonSubmit'> Soumettre </button>
@@ -186,6 +186,7 @@
                               r["3"] = star3;
                               r["4"] = star4;
                               json["rated"] = r;
+                              $("#questions").addClass("voted");
                               send_stars(JSON.stringify(json));
                             }
                           });

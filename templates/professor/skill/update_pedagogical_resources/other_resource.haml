@@ -105,8 +105,17 @@
                   if (q.attr("rid") == {{resource.id}}) {
                     q.remove();
                   } else {
-                    q.attr("rid",{{resource.id}});
-                    q.appendTo($("#big"+{{resource.id}}).parent());
+                    if (q.hasClass('voted')) {
+                      q.remove();
+                      $.get("{% static 'question.html' %}").success(function(data) {
+                      $("#big"+{{resource.id}}).parent().append(data);
+                      $("#big"+{{resource.id}}).parent().parent().find("#questions").attr("rid",{{resource.id}});
+                      question = $("#big"+{{resource.id}}).parent().parent().find("#questions");
+                  });
+                    } else {
+                      q.attr("rid",{{resource.id}});
+                      q.appendTo($("#big"+{{resource.id}}).parent());
+                    }
                   }
                 }
                });
