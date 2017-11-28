@@ -186,6 +186,7 @@
                               r["3"] = star3;
                               r["4"] = star4;
                               json["rated"] = r;
+                              $("#questions").addClass("voted");
                               send_stars(JSON.stringify(json));
                             }
                           });
