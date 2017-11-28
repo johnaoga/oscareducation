@@ -1,11 +1,11 @@
-# -*- coding: utf-8 -*-
+''# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.db import models
 from django.contrib.postgres.fields import JSONField
 from django.contrib.auth.models import User
-from rating.models import Star_rating,Rating
+from rating.models import Star_rating, Rating
 from django.utils import timezone
-from users.models import Professor,Student
+from users.models import Professor, Student
 from django.db.models import Count
 
 
@@ -89,6 +89,20 @@ class Resource(models.Model):
             else:
                 return (star_student / student_nb, star_prof / prof_nb)
 
+    def weighted_average(self):
+        """
+
+        :return: retuns the weighted average of profs and students
+        """
+        avg_p, avg_s = self.average()
+        if avg_p == 0:
+            res = avg_s
+        elif avg_s == 0:
+            res = avg_p
+        else:
+            res = ((avg_p * 0.7 + avg_s * 0.3) / 2)
+
+        return res
 
     def add_rating(self,question,value,user):
         """

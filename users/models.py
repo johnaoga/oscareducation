@@ -4,16 +4,16 @@ from __future__ import unicode_literals
 import json
 from django.db import models
 import random
-from django.db.models import Max
-from django.db.models import Count
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
 from interface import Status
+from django.db.models import Count
+from django.db.models import Max
+
 
 class AuthUserManager(models.Manager):
     def get_queryset(self):
         return super(AuthUserManager, self).get_queryset().select_related('user')
-
 
 
 class Professor(models.Model):
@@ -34,6 +34,19 @@ class Professor(models.Model):
         self.user.first_name, self.user.last_name)) if self.user.first_name or self.user.last_name else self.user.username
 
     def update_status(self):
+
+        res = resources.models.Resource.objects.filter(added_by=self.user)
+        nb_4 = 0
+        for r in res:
+            avg = r.weighted_average()
+            print(avg)
+            if avg >= 4:
+                nb_4 += 1
+        print("number 4 star res:" + str(nb_4))
+        if nb_4 > self.nbr_4_star_res:
+            self.nbr_4_star_res = nb_4
+            self.save()
+
         if self.status is not None:
             obj_status = json.loads(self.status)
         else:
@@ -52,7 +65,6 @@ class Professor(models.Model):
                 self.save()
         else:
             top_prof = top.professor
-            #print("top prof: " + str(top_prof.nbr_4_star_res) + "    me: " + str(self.nbr_4_star_res))
 
             if top_prof.nbr_4_star_res < self.nbr_4_star_res:
                 prof = Professor.objects.get(id=top.professor_id)
@@ -60,7 +72,6 @@ class Professor(models.Model):
                 prof.status = json.dumps(Status("Super Contributor", "/static/img/status4.png").__dict__)
                 prof.save()
 
-                #print("update top prof")
                 self.status = json.dumps(Status("Top Contributor", "/static/img/status5.png").__dict__)
                 top.professor = self
                 top.save()
@@ -87,18 +98,6 @@ class Professor(models.Model):
                     self.status = json.dumps(Status("Super Contributor", "/static/img/status4.png").__dict__)
                     self.status_changed = 1
             self.save()
-
-        """"statuss = Professor_status.objects.filter(min_contrib__lte=self.nbr_4_star_res)
-        if statuss.count() != 0:
-            statuss = statuss.order_by('-min_contrib').first()
-            print("Status: "+statuss.name)"""
-
-
-
-    # augments the number of 4-5 star ratings
-    def inc(self):
-        self.nbr_4_star_res += 1
-        self.save()
 
     class Meta:
         ordering = ['user__last_name', 'user__first_name']
@@ -166,3 +165,5 @@ class Top_contributor(models.Model):
     class Meta:
         ordering = ['min_contrib',"name"]"""
 
+
+import resources.models
