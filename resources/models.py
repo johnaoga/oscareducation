@@ -105,14 +105,14 @@ class Resource(models.Model):
         if rating.exists() and len(rating)==1:
             rating = rating.first()
             rating.question = question
-            rating.answer = value
+            rating.value = value
             rating.rated_on = timezone.now()
             rating.save()
         elif not rating.exists():
             rating = Rating.objects.create(
                 resource=self,
                 question=question,
-                answer=value,
+                value=value,
                 rated_by=user,
                 rated_on=timezone.now()
             )
