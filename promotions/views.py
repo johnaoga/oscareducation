@@ -1948,7 +1948,6 @@ def create_rate(request,type,id):
                 resource.add_star(stars/count, request.user)
         # Fill response data with average for each question of that resource
             #EMPTY for now
-
         return HttpResponse(
             json.dumps(response_data),
             content_type="application/json"
