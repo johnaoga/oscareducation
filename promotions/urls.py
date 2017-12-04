@@ -45,6 +45,7 @@ urlpatterns = [
     url(r'^skill/(?P<slug>.+)/$', user_is_professor(DetailView.as_view(model=Skill, slug_field="code", template_name="professor/skill/detail.haml")), name='skill_detail'),
     url(r'^pedagogical/(?P<type>.+)/(?P<id_type>.+)/(?P<kind>.+)/resource/remove/(?P<id>\d+)/$', views.remove_pedagogical_ressources, name='remove_pedagogical_ressources'),
     url(r'^pedagogical/(?P<type>.+)/(?P<id>.+)/rate/$', views.create_rate,name='create_rate'),
+    url(r'^pedagogical/(?P<type>.+)/(?P<id>.+)/makerating/$', views.get_rate_votes,name='get_rate_votes'),
     url(r'^pedagogical/(?P<type>.+)/(?P<id>.+)/$', views.update_pedagogical_ressources, name='update_pedagogical_ressources'),
     url(r'^skill_tree/$', user_is_professor(ListView.as_view(model=Skill, template_name="professor/skill/tree.haml")), name='skill_tree'),
 

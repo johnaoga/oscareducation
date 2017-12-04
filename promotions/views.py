@@ -51,7 +51,7 @@ import csv
 from django.http import JsonResponse
 from users.models import Student, Professor
 from rating.models import Question as RatingQuestion
-from rating.models import Rating, Star_rating, Question
+from rating.models import Rating, Star_rating
 from django.conf import settings
 from django.forms import model_to_dict
 
@@ -838,7 +838,9 @@ def update_pedagogical_ressources(request, type, id):
         if r.exists() & s.exists():
             if s.count() != 1:
                 print "Error more than 1 star rating for 1 resource"
-            rated_res[item.id] = model_to_dict(s.first(),fields = ["star","rated_on"],)
+            rated_res[item.id] = {}
+            for rr in r:
+                rated_res[item.id][rr.question.id] = rr.value
 
     personal_resource = base.resource.filter(section="personal_resource")
     lesson_resource = base.resource.filter(section="lesson_resource")
@@ -1050,38 +1052,6 @@ def update_pedagogical_ressources(request, type, id):
     sesamath_references_manuals = Sesamath.objects.filter(ressource_kind__iexact="Manuel")
     sesamath_references_cahiers = Sesamath.objects.filter(ressource_kind__iexact="Cahier")
 
-    """make a dict of questions and associated answers:
-            questionnaire_dict = {question_id1: [question_statement1,answer_statement,
-                                        answer_id,answer_statement,answer_id...],
-                                 question_id2: [question_statement2,answer_statement,
-                                        answer_id,answer_statement,answer_id...]                                    
-                                        }
-        Questions according to user type
-    """
-    try:
-        prof = Professor.objects.get(user=request.user)
-        student = None
-    except Professor.DoesNotExist:
-        try:
-            prof = None
-            student = Student.objects.get(user=request.user)
-        except Student.DoesNotExist:
-            student = None
-
-    questionnaire_dict = {}
-    for item in settings.DEFAULT_QUESTIONS_ID:
-        if student:
-            qa_set = Questionnaire.objects.filter(question=item,question__type=2)
-        else:
-            qa_set = Questionnaire.objects.filter(question=item,question__type=1)
-        questionnaire_dict[item] = []
-        questionnaire_dict[item].append(RatingQuestion.objects.get(pk=item).question_statement)
-        for qa in qa_set:
-            questionnaire_dict[item].append(qa.answer.answer_statement)
-            questionnaire_dict[item].append(int(qa.answer.id))
-    json_questionnaire = json.dumps(questionnaire_dict)
-
-    """find all rated resource by user"""
 
     return render(request, "professor/skill/update_pedagogical_resources.haml", {
         "sesamath_references_manuals": sesamath_references_manuals,
@@ -1110,7 +1080,6 @@ def update_pedagogical_ressources(request, type, id):
         "sori_coder_lesson_resource_sesamath": sori_coder_lesson_resource_sesamath,
         "sori_coder_lesson_resource_khanacademy": sori_coder_lesson_resource_khanacademy,
         "sori_coder_exercice_resource_sesamath": sori_coder_exercice_resource_sesamath,
-        "questionnaire": json_questionnaire,
         "rated_resources": rated_res,
     })
 
@@ -1951,7 +1920,6 @@ def enseign_trans(request):
 def create_rate(request,type,id):
     if request.method == 'POST':
         json_str = request.POST.get('json_str')
-        print "working"
 
         response_data = {}
         try:
@@ -1968,7 +1936,7 @@ def create_rate(request,type,id):
         stars = 0.0
         count = 0
         for item in dict["rated"]:
-            q = Question.objects.get(pk=int(item))
+            q = RatingQuestion.objects.get(pk=int(item))
             resource.add_rating(question=q, value=float(dict["rated"][item]), user=request.user)
             count +=1
             stars += float(dict["rated"][item])
@@ -1982,11 +1950,55 @@ def create_rate(request,type,id):
             #EMPTY for now
 
         return HttpResponse(
-            json.dumps(json.dumps(response_data)),
+            json.dumps(response_data),
             content_type="application/json"
         )
     else:
         return HttpResponse(
             json.dumps({"nothing to see": "this isn't happening"}),
+            content_type="application/json"
+        )
+
+
+def get_rate_votes(request,type,id):
+    if request.method == 'POST':
+        dicty = {}
+        id = int(request.POST.get('id'))
+        try:
+            Professor.objects.get(user=request.user)
+            prof_or_stud = 0
+        except Professor.DoesNotExist:
+            try:
+                Student.objects.get(user=request.user)
+                prof_or_stud = 1
+            except Student.DoesNotExist:
+                print "Error: the user is no a student nor a professor"
+                prof_or_stud = -1
+
+        if prof_or_stud == 0:
+            questions = RatingQuestion.objects.filter(type=0)
+        elif prof_or_stud == 1:
+            questions = RatingQuestion.objects.filter(type=1)
+        else:
+            questions = {}
+
+        for q in questions:
+            dicty[int(q.id)] = []
+            dicty[int(q.id)].append(q.question_statement)
+            r = Rating.objects.filter(question=q,resource=id,rated_by=request.user)
+            if r.exists():
+                stars = r.first().value
+                dicty[int(q.id)].append(int(stars))
+            else:
+                dicty[int(q.id)].append(0)
+        if len(dicty) <= 0:
+            print("NO questions found in DB")
+        return HttpResponse(
+            json.dumps(dicty),
+            content_type="application/json"
+        )
+    else:
+        return HttpResponse(
+            json.dumps({}),
             content_type="application/json"
         )
