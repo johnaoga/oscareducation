@@ -46,8 +46,8 @@ class Rating_TestCase(TestCase):
         self.u = User.objects.create()
         self.r1 = Resource.objects.create(section="test",content='{"kind": "lesson", "title": "Fonctions de référence", "author": "Paul Robaux"}  ')
         self.d1 = timezone.now()
-        self.ra1 = Rating.objects.create(resource=self.r1,question=self.q1,answer=3.0,rated_by=self.u,rated_on=self.d1)
+        self.ra1 = Rating.objects.create(resource=self.r1,question=self.q1,value=3.0,rated_by=self.u,rated_on=self.d1)
 
     def test_rating(self):
         q = Rating.objects.get(pk=self.ra1.id)
-        self.assertEqual(q.answer,3.0)
+        self.assertEqual(q.value,3.0)
