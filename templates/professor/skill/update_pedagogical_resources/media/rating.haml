@@ -1,0 +1,41 @@
+-load static
+-load rating_tags
+
+%div.small{id:"big{{resource.id}}", style:"cursor: default;"}
+  %img{id: "star{{ resource.id}}",src: "https://d30y9cdsu7xlg0.cloudfront.net/png/431-200.png",style:"height:20px;width:height;"}
+    Note
+  %link{href: "{% static 'StarRating.css' %}",rel: "stylesheet"}
+  %link{href: "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css",rel: "stylesheet"}
+  -if resource.added_by == request.user
+    %div.small
+      Vous ne pouvez pas voter votre propre resource
+  -else
+    -if resource.id in rated_resources
+      %div.small
+        Merci pour votre vote. Cliquer pour le modifier
+    %script{src: "{% static 'jquery-3.2.1.min.js' %}"}
+    %script{src: "{% static 'questionnaire.js' %}"}
+    :javascript
+      var t = '{{rated_resources|get_json|safe}}';
+      $(document).ready(function(){
+        setratedresources(t);
+        $("#big"+{{resource.id}}).on('click',function() {
+          var q = $("#questions");
+          if (q.length<=0) {
+            // no questionnaire present
+            makerating($("#big"+{{resource.id}}).parent(),{{resource.id}});
+          } else {
+            if (q.attr("rid") == {{resource.id}}) {
+              q.remove();
+            } else {
+              if (q.hasClass('voted')) {
+                q.remove();
+                makerating($("#big"+{{resource.id}}).parent(),{{resource.id}});
+              } else {
+                q.attr("rid",{{resource.id}});
+                q.appendTo($("#big"+{{resource.id}}).parent());
+              }
+            }
+          }
+        });
+      });

@@ -1,6 +1,7 @@
 from django import template
 from resources.models import Resource
 from rating.models import Rating
+import json
 
 
 register = template.Library()
@@ -40,3 +41,7 @@ def has_rated(user,id):
         return True
     else:
         return False
+
+@register.filter
+def get_json(dictionary):
+    return json.dumps(dictionary)
