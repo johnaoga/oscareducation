@@ -1,4 +1,10 @@
-function make_question(parent,question_stm,q_id) {
+var questions = null; // store questions gather once from site
+var rated_resources = null;
+var currentid = null;
+function make_question(parent,question_stm,q_id,value) {
+    if (value<=0) {
+        value=0;
+    }
 	var d = document;
 	var p = d.createElement("p");
 	p.className = "lead";
@@ -6,6 +12,9 @@ function make_question(parent,question_stm,q_id) {
 	var divy = d.createElement("div");
 	divy.id = "StarId";
 	divy.setAttribute("qid",q_id);
+	if (value>0) {
+	    divy.setAttribute("stars",value);
+    }
 	divy.className = "rating-stars text-center";
 	parent.append(p);
 	p.append(divy);
@@ -16,7 +25,11 @@ function make_question(parent,question_stm,q_id) {
 	var array = ["Mauvais","Passable","satis","bien", "excellent"];
 	for (var i=1;i<=5;i++) {
 		var li = d.createElement("li");
-		li.className='star small';
+		if (i<=value) {
+		    li.className='star small selected';
+        } else {
+		    li.className='star small';
+        }
 		li.setAttribute("data-value", i);
 		li.title = array[i-1];
 		ul.append(li);
@@ -24,29 +37,36 @@ function make_question(parent,question_stm,q_id) {
 	}
 	ul.innerHTML += "<b class='small'>excellente</b>";
 };
-/*
-json exemple = "{ '1': 'La resource est elle complete', '2':'La resource est elle bien faite','3':'La resource est elle Nicke','4':'Dernier question pour la resource' }"
-ID: resource id
-*/
-function makeQuestionnaire(parent,id,json) {
-	json = JSON.parse(json);
+
+function makeQuestionnaire(parent,id,json_ss) {
+    if (Object.keys(json_ss).length === 0 && json_ss.constructor === Object) {
+        console.log("empty json object");
+        return;
+    }
+    json_ob = json_ss;
+    questions = json_ob;
 	var d = document;
 	var div = d.createElement("div");
 	div.id = "questions";
 	div.setAttribute("rid",id);
 	div.style="border:1px solid grey;padding: 3px;";
 	parent.append(div);
-	for (var key in json) {
-		make_question(div,json[key],key);
+	for (var key in json_ob) {
+	    if (rated_resources.hasOwnProperty(id)) {
+            make_question(div, json_ob[key][0], key, json_ss[key][1]);
+        } else {
+            make_question(div, json_ob[key][0], key,0);
+        }
 	}
 	// add button
 	var p = d.createElement("p");
 	p.className = "small";
-	p.innerHTML = "Commentaire (optionel): <br>";
+	p.innerHTML = "Commentaire (optionnel): <br>";
 	var text = d.createElement("textarea");
 	text.id = "comment";
-	text.maxlength = "300";
+	text.setAttribute("maxlength","300");
 	text.rows = "7";
+	text.cols = "42";
 	p.append(text);
 	div.append(p);
 	var but = d.createElement("button");
@@ -55,8 +75,8 @@ function makeQuestionnaire(parent,id,json) {
 	but.innerHTML = "Soumettre";
 	div.append(but);
 
-	/* IMPORTANT initFunctions() set the functions that handles all the created html!!*/
-	initFunctions();
+	/* IMPORTANT initFunctions() set the functions that handles all the created html clicks etc.. !!*/
+    initFunctions();
 };
 function send_stars(json_s) {
 	/* Function to send new ratings to server and do something with return valueconsole.log(ratingValue1);
@@ -79,10 +99,15 @@ function send_stars(json_s) {
        	// handle a successful response
        	success : function(json_returned) {
 			// Use json to set average for each question
-			console.log("success GET"+json_returned); // another sanity check
            	$(document).find("#questions").html("Votes: <br>"+json_returned);
            	$(document).parent().addClass('voted');
-           	// HERE you can use returned json_returned
+           	$("#questions").remove();
+           	// reset so if user reclicks on vote, it displays new vote from database
+           	questions = null;
+           	var j = JSON.parse(json_s);
+           	rated_resources[j['id']] = j["rated"];
+           	currentid = null;
+           	alert("Thanks for your vote!");
        	},
        	// handle a non-successful response
        	error : function(xhr,errmsg,err) {
@@ -147,9 +172,29 @@ function initFunctions() {
         	json["id"] = id;
         	json["comment"] = comment;
         	json["rated"] = r;
+
         	$("#questions").addClass("voted");
-        	//send_stars(JSON.stringify(json));
-			console.log(JSON.stringify(json));
+        	$("#questions").fadeOut();
+        	var resend = false;
+        	if (rated_resources.hasOwnProperty(id)) {
+        	    for (var key in rated_resources[id]) {
+        	        if (rated_resources[id][key] != json["rated"][key]) {
+                        resend=true;
+                    }
+                }
+            } else {
+        	    send_stars(JSON.stringify(json));
+        	    return;
+            }
+            if (resend) {
+                send_stars(JSON.stringify(json));
+            } else {
+        	    $("#questions").remove();
+                // reset so if user reclicks on vote, it displays new vote from database
+                questions = null;
+                rated_resources[json['id']] = json["rated"];
+                currentid = null;
+            }
 		}
     });
     /* Handles everything when we click on the stars */
@@ -212,5 +257,47 @@ function initFunctions() {
         });
         chart.render();
         e.preventDefault();
+    });
+};
+function setratedresources(jsond) {
+    rated_resources = JSON.parse(jsond);
+}
+
+function makerating(parent,id) {
+	/* Get questions from server only if we never called it!
+	    1 request to server!
+	*/
+	if (rated_resources.hasOwnProperty(id)) {
+    }
+    if (questions == null) {
+        ajaxsendmakerating(parent, id);
+    }
+    else {
+	    if (currentid == id) {
+            makeQuestionnaire(parent, id, questions);
+        }else {
+	        ajaxsendmakerating(parent, id);
+        }
+    }
+};
+
+function ajaxsendmakerating(parent,id) {
+    $.ajax({
+        url: "makerating/", // the endpoint
+        type: "POST", // http method
+        data: {"id": id}, // data sent with the post request
+        // handle a successful response
+        success: function (json_returned) {/*
+                        json_returned is a json object with as key the question id and as associated value
+                           an array of question string and value (0 if not voted else)
+                    */
+            makeQuestionnaire(parent, id, json_returned);
+            questions = json_returned;
+            currentid = id;
+        },
+        // handle a non-successful response
+        error: function (xhr, errmsg, err) {
+            console.log(xhr.status + ": b" + xhr.responseText); // provide a bit more info about the error to the console
+        }
     });
 };
