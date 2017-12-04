@@ -10,7 +10,7 @@ class Star_rating(models.Model):
     resource = models.ForeignKey('resources.Resource')
     """The resource linked to this star rating"""
 
-    star = models.FloatField()
+    star = models.FloatField(validators = [MinValueValidator(0.0), MaxValueValidator(5.0)])
     """Number of stars given"""
 
     rated_by = models.ForeignKey(User)
@@ -33,7 +33,7 @@ class Rating(models.Model):
     question = models.ForeignKey('Question')
     """The Question answered for this rating"""
 
-    answer = models.FloatField(validators = [MinValueValidator(0.0), MaxValueValidator(5.0)])
+    value = models.FloatField(validators = [MinValueValidator(0.0), MaxValueValidator(5.0)])
     """The value given to this rating"""
 
     rated_by = models.ForeignKey(User)
