@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from rating.models import Star_rating, Rating
 from django.utils import timezone
 from users.models import Professor, Student
-from django.db.models import Count
+from oscar import settings
 
 
 """resources models"""
@@ -100,16 +100,16 @@ class Resource(models.Model):
         elif avg_s == 0:
             res = avg_p
         else:
-            res = ((avg_p * 0.7 + avg_s * 0.3) / 2)
+            res = ((avg_p * settings.WEIGHT_PROFESSORS + avg_s * settings.WEIGHT_STUDENTS) / 2)
 
         return res
 
     def add_rating(self,question,value,user):
         """
-        Creates or Modifies a question/answer to a resource by a user
+        Creates or Modifies a question/value to a resource by a user
 
         :param question: the question answered by user with answer
-        :param answer: the answer to question by user
+        :param value: the value given to question by user
         :param user: User rating resource
         :return: Rating object or None if the user may not rate the resource
         """
@@ -157,7 +157,7 @@ class Resource(models.Model):
         """
         r = Rating.objects.filter(resource=self,question=question)
         if r.exists():
-            return r.count();
+            return r.count()
         else:
             return 0
 

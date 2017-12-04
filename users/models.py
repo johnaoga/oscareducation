@@ -42,7 +42,6 @@ class Professor(models.Model):
             print(avg)
             if avg >= 4:
                 nb_4 += 1
-        print("number 4 star res:" + str(nb_4))
         if nb_4 > self.nbr_4_star_res:
             self.nbr_4_star_res = nb_4
             self.save()

@@ -97,4 +97,4 @@ class Resource_Rating_TestCase(TestCase):
         qr = self.r.add_rating(question=self.q1, value=self.a1, user=self.prof2.user)
         qr = self.r.add_rating(question=self.q1, value=self.a2, user=self.prof2.user)
         self.assertEqual(Rating.objects.count(), 1)
-        self.assertEqual(Rating.objects.get(pk=qr.id).answer,self.a2)
+        self.assertEqual(Rating.objects.get(pk=qr.id).value,self.a2)
