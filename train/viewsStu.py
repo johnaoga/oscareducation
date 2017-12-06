@@ -11,7 +11,6 @@ from django.core.urlresolvers import reverse
 from django.views.decorators.http import require_POST
 from django.db import transaction
 from django.db.models import Q
-from django.contrib.auth.models import User
 
 # from examinations import generation
 from examinations.models import TestStudent, Answer, TestExercice
@@ -20,18 +19,9 @@ from end_test_poll.models import StudentPoll
 from end_test_poll.forms import StudentPollForm
 from resources.models import KhanAcademy, Sesamath, Resource
 
+
 from utils import user_is_student
 
-from train.models import Scenario
-from train.models import ScenaSkill
-
-from promotions.models import Lesson
-
-from users.models import Student
-from users.models import Professor
-
-
-from django.apps import apps
 
 @user_is_student
 def dashboard(request):
@@ -493,8 +483,8 @@ def skill_pedagogic_ressources(request, type, slug):
     sesamath_references_manuals = Sesamath.objects.filter(ressource_kind__iexact="Manuel")
     sesamath_references_cahiers = Sesamath.objects.filter(ressource_kind__iexact="Cahier")
 
-    dico = {}
-    dico.update({"sesamath_references_manuals": sesamath_references_manuals,
+    return render(request, "professor/skill/update_pedagogical_resources.haml", {
+        "sesamath_references_manuals": sesamath_references_manuals,
         "sesamath_references_cahier": sesamath_references_cahiers,
         "base": base,
         "personal_resources": personal_resource,
@@ -516,30 +506,5 @@ def skill_pedagogic_ressources(request, type, slug):
         "sori_coder_other_resources": sori_coder_other_resources,
         "sori_coder_lesson_resource_sesamath": sori_coder_lesson_resource_sesamath,
         "sori_coder_lesson_resource_khanacademy": sori_coder_lesson_resource_khanacademy,
-        "sori_coder_exercice_resource_sesamath": sori_coder_exercice_resource_sesamath})
-
-    dico["scenarios"] = []
-
-    dico["headline"] = ["Titre", "Thematique", "Niveau Scolaire", "Actions"]
-    dico["pk"] = slug
-    print("WE ARE HERE")
-    print(request.user)
-    #user = apps.get_model(app_label='auth', model_name='request.user')
-    stud = Student.objects.filter(user = request.user)
-
-    for lesson in Lesson.objects.filter(students = stud):
-        prof = list(lesson.professors.all())[0]
-
-    # for final in Professor.objects.filter(user = prof['professors']):
-    #     print("PROF : ")
-    #     print(final.user)
-    for scsk in ScenaSkill.objects.filter(code_skill = slug):
-        for scena in Scenario.objects.filter(id = scsk.id_scenario):
-            try:
-                s = Scenario.objects.get(id = scsk.id_scenario)
-                if(s.creator == prof.user.username):
-                    dico["scenarios"].append({"pk":slug,"id":s.id,"sequence":s.title, "skill":s.skill, "topic":s.topic, "grade":s.grade_level,"edit":"","delete":"","see":""})
-            except:
-                pass
-
-    return render(request, "professor/skill/update_pedagogical_resources.haml", dico)
+        "sori_coder_exercice_resource_sesamath": sori_coder_exercice_resource_sesamath,
+    })

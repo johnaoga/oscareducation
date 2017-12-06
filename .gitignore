@@ -8,4 +8,6 @@ oscar/settings_local.py
 */migrations/
 documentation/build/
 .DS_Store
+oscar-data.sql
+makemigrations.sh
 *.sql

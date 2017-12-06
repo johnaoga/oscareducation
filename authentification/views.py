@@ -1,14 +1,23 @@
 # encoding: utf-8
 
 from django.conf import settings
+from django.contrib import messages
+# Avoid shadowing the login() and logout() views below.
+from django.contrib.auth import (REDIRECT_FIELD_NAME, login as auth_login, logout as auth_logout)
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.models import User
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
+from django.db import transaction
 from django.http import HttpResponseRedirect
+from django.shortcuts import resolve_url, render, get_object_or_404
 from django.template.response import TemplateResponse
 from django.utils.http import is_safe_url
-from django.shortcuts import resolve_url, redirect, render, get_object_or_404
-from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.debug import sensitive_post_parameters
+from forms import UsernameLoginForm, CodeForm, CreatePasswordForm, SubscribeTeacherForm
 
 from stats.models import LoginStats
 

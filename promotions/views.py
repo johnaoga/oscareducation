@@ -51,6 +51,9 @@ import csv
 from django.http import JsonResponse
 from users.models import Student, Professor
 
+from train.models import Scenario
+from train.models import ScenaSkill
+
 
 @user_is_professor
 def dashboard(request):
@@ -128,11 +131,33 @@ def lesson_detail(request, pk):
             print e
             print "Error: could no calculate heatmap"
 
-    return render(request, "professor/lesson/detail.haml", {
-        "lesson": lesson,
-        "number_of_students": number_of_students,
-        "skills_to_heatmap_class": skills_to_heatmap_class,
-    })
+    dico = {}
+    dico["lesson_number"] = pk
+    dico["own_scenarios"]=[]
+    dico["skills"]=[]
+    # test d recup de date dans la db
+    for s in Scenario.objects.filter(creator = request.user):
+
+        dico["own_scenarios"].append({"id":s.id,"sequence":s.title, "skill":s.skill, "topic":s.topic, "grade":s.grade_level,"edit":"","delete":"","see":""})
+        for sk in ScenaSkill.objects.filter(id_scenario = s.id):
+            dico["skills"].append({"id":s.id,"skillcode":sk.code_skill})
+
+
+
+    dico["foreign_scenarios"] = []
+
+    for s in Scenario.objects.exclude(creator = request.user).filter(public = True):
+        dico["foreign_scenarios"].append({"id":s.id,"sequence":s.title, "skill":s.skill, "topic":s.topic, "grade":s.grade_level,"edit":"","delete":"","see":""})
+        for sk in ScenaSkill.objects.filter(id_scenario = s.id):
+            dico["skills"].append({"id":s.id,"skillcode":sk.code_skill})
+    # old line = dico["headline"] = ["Title", "Type of exercice", "Topic", "Grade Level", "Actions"]
+    dico["headline"] = ["Titre", "Competence(s)", "Thematique", "Niveau", "Actions"]
+
+    dico.update({"lesson": lesson,
+                "number_of_students": number_of_students,
+                "skills_to_heatmap_class": skills_to_heatmap_class})
+
+    return render(request, "professor/lesson/detail.haml", dico)
 
 
 @user_is_professor

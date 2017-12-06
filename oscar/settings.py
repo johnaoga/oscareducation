@@ -59,8 +59,10 @@ INSTALLED_APPS = (
     'stats',
     'compressor',
     'users',
+    'train',
     'resources',
     'end_test_poll',
+    'django.contrib.sites',
     'chart'  # group 07
 
 ) + ADDITIONAL_APPS
@@ -159,6 +161,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
 STATIC_URL = '/static/'
+
+SITE_ID = 1
 
 MEDIA_URL = '/media/'
 
