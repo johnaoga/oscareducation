@@ -5,7 +5,8 @@
 -block head
   -compress js
     %script{type: "text/javascript", src: "{% static 'js/professor_validate_exercice.js' %}"}
-    %script{type: "text/javascript", src: "{% static 'js/chart.js' %}"}
+    %script{type: "text/javascript", src: "{% static 'js/barchart.js' %}"}
+    %script{type: "text/javascript", src: "{% static 'js/piechart.js' %}"}
     %script{type: "text/javascript", src: "{% static 'js/previsualize_chart_from_page.js' %}"}
 -block breadcrumb
   %ol.breadcrumb
@@ -96,6 +97,7 @@
                     -# Group 7
                     %optgroup{label: "Graphiques"}
                       %option{value: "chart-barchart"} Réponse sur un graphique en bâtonnets
+                      %option{value: "chart-piechart"} Réponse sur un graphique circulaire
                     %option{value: "professor"} Réponse corrigée par le professeur
               .form-group
                 %label.control-label.col-sm-2 Source(s)
@@ -166,7 +168,7 @@
                   %button.btn.btn-success.btn-sm.btn-updateBar{ng-model: "createBarChart", onclick: "chart_btnUpdate($(this))", type: "button"}
                     %span.glyphicon.glyphicon-ok
                     Mettre à jour le graphique
-                  .jxgbox.chartQuestion.chartQuestionValidation#jxgbox{id:barChartForm,style:"width:100%; height:676px;margin-top:20px;margin-bottom:20px;",data-chart-type:"chart-barchart",value:"chart-barchart"}
+                  .jxgbox.chartQuestion.chartQuestionValidation.chartQuestionBarchart#jxgbox{id:barChartForm,style:"width:100%; height:676px;margin-top:20px;margin-bottom:20px;",data-chart-type:"chart-barchart",value:"chart-barchart"}
                   .form-group
                     %label.control-label.col-sm-3 Ajouter une nouvelle ordonnée
                     .col-sm-3
@@ -176,9 +178,29 @@
                         %span.glyphicon.glyphicon-plus
                         Ajouter
                     .col-sm-2
-                      %button.btn.btn-danger.btn-deleteBar{onclick: "chart_deleteLast($(this))", type: "button"}
+                      %button.btn.btn-danger.btn-deleteBar{onclick: "chart_deleteLastBar($(this))", type: "button"}
                         %span.glyphicon.glyphicon-minus
                         Supprimer la dernière
+                  -# = .jxgbox.chartQuestion.chartQuestionValidation.chartQuestionBarchart#jxgbox{style:"width:100%; height:676px;",data-chart-type:"piechart",data-chart-percent:'[20,30,50]',data-chart-label:'["math","francais","Sciences"]'}
+
+                .form-horizontal{ng-if: "question.type == \"chart-piechart\""}
+                  .form-group
+                    %label.control-label.col-sm-3 Amplitude du secteur
+                    .col-sm-3
+                      %input.form-control{id: "sector",class: "sector",type: "number", ng-model: "sector", ng-required: "false"}
+                    %label.control-label.col-sm-3 Nom du secteur
+                    .col-sm-3
+                      %input.form-control{id: "labelPie",class: "labelPie",type: "text", ng-model: "labelPie", ng-required: "false"}
+                  .form-group
+                    .col-sm-2
+                      %button.btn.btn-success.btn-addPie{onclick: "chart_createPieChartFromForm()", type: "button"}
+                        %span.glyphicon.glyphicon-plus
+                        Ajouter
+                    .col-sm-2
+                      %button.btn.btn-danger.btn-deletePie{onclick: "chart_deleteLastPie($(this))", type: "button", class:"btn-deletePie"}
+                        %span.glyphicon.glyphicon-minus
+                        Supprimer la dernière
+                  .jxgbox.chartQuestion.chartQuestionValidation.chartQuestionPiechart#jxgbox{id:pieChartForm,style:"width:100%; height:676px;margin-top:20px;margin-bottom:20px;",data-chart-type:"chart-piechart",value:"chart-piechart"}
                   -# = .jxgbox.chartQuestion.chartQuestionValidation#jxgbox{style:"width:100%; height:676px;",data-chart-type:"piechart",data-chart-percent:'[20,30,50]',data-chart-label:'["math","francais","Sciences"]'}
 
                 .form-horizontal{ng-if: "question.type == \"graph\""}

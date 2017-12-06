@@ -40,8 +40,24 @@
                 %input{type: "number", value: "", name: "graph-{{ toploop_counter0 }}-{{ answer.graph.type }}-{{ forloop.counter0 }}-X", id: "graph-{{ toploop_counter0 }}-{{ answer.graph.type }}-{{ forloop.counter0 }}-X"}
                 %input{type: "number", value: "", name: "graph-{{ toploop_counter0 }}-{{ answer.graph.type }}-{{ forloop.counter0 }}-Y", id: "graph-{{ toploop_counter0 }}-{{ answer.graph.type }}-{{ forloop.counter0 }}-Y"}
           -elif answer.type == "chart-barchart"
-            -# Group 7
-            %p (Group 07) File 'templates/examinations/exercice_rendering.haml' doesn't contain information to display here.
+            %script{type: "text/javascript", src: "/static/js/barchart.js"}
+            -with name=forloop.counter0
+              -# Group 7
+              %input{type: "hidden", value: "", name: "{{ name }}", id: "barchart-hiddenInput"}
+              .jxgbox.chartQuestion.chartQuestionStudent#jxgboxPreview{id:barChartForm,style:"width:634px; height:676px;margin-top:20px;margin-bottom:20px;",data-chart-type:"chart-barchart",value:"chart-barchart",data-chart-raw3:"{{answer.answers}}"}
+              -#.jxgbox.chartQuestion.chartQuestionValidation#jxgbox{id:barChartForm,style:"width:100%; height:676px;margin-top:20px;margin-bottom:20px;",data-chart-type:"chart-barchart",value:"chart-barchart"}
+              .form-group
+                %label.control-label.col-sm-3 Ajouter une nouvelle ordonnée
+                .col-sm-3
+                  %input.form-control{id: "newBarY",class: "newBarY",type: "number", ng-model: "newBarY", ng-required: "false"}
+                .col-sm-3
+                  %button.btn.btn-success.btn-addBar{onclick: "chart_add($(this))", type: "button"}
+                    %span.glyphicon.glyphicon-plus
+                    Ajouter
+                .col-sm-3
+                  %button.btn.btn-danger.btn-deleteBar{onclick: "chart_deleteLast($(this))", type: "button"}
+                    %span.glyphicon.glyphicon-minus
+                    Supprimer la dernière
           -elif answer.type == "professor"
             %input.form-control{id: "{{ forloop.counter0 }}", name: "{{ forloop.counter0 }}", type: "text", autocomplete: "off"}
             -#%textarea.form-control{id: "{{ forloop.counter0 }}", name: "{{ forloop.counter0 }}", rows: "5"}

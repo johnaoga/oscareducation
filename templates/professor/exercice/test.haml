@@ -119,6 +119,12 @@
                                 %tr
                                   Unsupported answer type:
                                     %i= answer.type
+                              -elif answer.type == "chart-piechart"
+                                -# Group 7
+                                %p (Group 07) File 'templates/professor/exercice/test.haml' doesn't contain information to display here.
+                                %tr
+                                  Unsupported answer type:
+                                    %i= answer.type
                               -else
                                 %tr
                                   Unsupported answer type:

@@ -1441,7 +1441,7 @@ def exercice_validation_form_validate_exercice(request):
             questions[question["instructions"]] = {
                 "type": question["type"],
                 #GROUPE 7 on enregistre dans la BD
-                "answers": [[y for y in x["chart"]] for x in question["answers"]],
+                "answers": [x["chart"] for x in question["answers"]],
             }
         # No provided answer if corrected by a Professor
         elif question["type"] == "professor":
@@ -1593,6 +1593,26 @@ def exercice_validation_form_submit(request, pk=None):
 
             #Group 7
             elif question["type"] == "chart-barchart":
+                answers = []
+
+                for answer in question["answers"]:
+                    if "latex" in answer:
+                        del answer["latex"]
+                    if "correct" in answer:
+                        del answer["correct"]
+                    if "text" in answer:
+                        del answer["text"]
+                    if "graph" in answer:
+                        del answer["graph"]
+                    answers.append(answer)
+
+                new_question_answers = {
+                    "type": question["type"],
+                    "answers": question["answers"],
+                }
+
+            #Group 7
+            elif question["type"] == "chart-piechart":
                 answers = []
 
                 for answer in question["answers"]:
