@@ -1,6 +1,5 @@
 from django import template
 from resources.models import Resource
-from rating.models import Rating
 import json
 
 
@@ -31,16 +30,11 @@ def get_average_prof(id):
     return prof
 
 @register.simple_tag
-def has_rated(user,id):
-    try:
-        resource = Resource.objects.get(pk=id)
-    except Resource.DoesNotExist:
-        print("Error: Resource with id %d doesn't exist"%id)
-        return False
-    if Rating.objects.filter(resource=resource,user=user).exists():
-        return True
+def owner(u,userother,t,f):
+    if u==userother:
+        return t
     else:
-        return False
+        return f
 
 @register.filter
 def get_json(dictionary):

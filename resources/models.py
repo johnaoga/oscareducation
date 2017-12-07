@@ -161,6 +161,26 @@ class Resource(models.Model):
         else:
             return 0
 
+    def get_average_votes_question(self,question):
+        r = Rating.objects.filter(resource=self,question=question)
+        count = r.count()
+        if r.exists():
+            avg = 0.0
+            for e in r:
+                avg += e.value
+            avg = avg / float(count)
+            return avg
+        else:
+            return 0
+
+    def get_question_voted(self):
+        r = Rating.objects.filter(resource=self)
+        questions = []
+        for e in r:
+            if e.question.id not in questions:
+                questions.append(e.question.id)
+        return questions
+
 
 #khanAcademy video reference data parsed from source url
 

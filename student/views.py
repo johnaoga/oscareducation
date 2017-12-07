@@ -282,7 +282,9 @@ def skill_pedagogic_ressources(request, type, slug):
         if r.exists() & s.exists():
             if s.count() != 1:
                 print "Error more than 1 star rating for 1 resource"
-            rated_res[item.id] = model_to_dict(s.first(), fields=["star", "rated_on"], )
+            rated_res[item.id] = {}
+            for rr in r:
+                rated_res[item.id][rr.question.id] = rr.value
 
     personal_resource = base.resource.filter(section="personal_resource")
     lesson_resource = base.resource.filter(section="lesson_resource")

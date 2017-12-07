@@ -38,32 +38,6 @@ border: 1px solid #CCC;
 border-radius: 4px;
 }
 
-.header {
-  padding:20px 0;
-  position:relative;
-  margin-bottom:10px;
-  
-}
-
-.header:after {
-  content:"";
-  display:block;
-  height:1px;
-  background:#eee;
-  position:absolute; 
-  left:30%; right:30%;
-}
-
-.header h2 {
-  font-size:3em;
-  font-weight:300;
-  margin-bottom:0.2em;
-}
-
-.header p {
-  font-size:14px;
-}
-
 .hidden {
     display:none;
 }
@@ -131,21 +105,24 @@ border-radius: 4px;
 
 /* Outer */
 .popup {
-    width:100%;
-    height:100%;
-    display:none;
-    position:fixed;
-    top:0px;
-    left:0px;
-    background:rgba(0,0,0,0.75);
+    width: 100%;
+    height: 100%;
+    display: none;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 2; /* Important to avoid popup behind elements*/
+    pointer-events: inherit;
 }
- 
+
 /* Inner */
 .popup-inner {
     max-width:700px;
     width:90%;
+    max-height:400px;
     padding:40px;
-    position:absolute;
+    position:fixed;
     top:50%;
     left:50%;
     -webkit-transform:translate(-50%, -50%);
@@ -153,6 +130,7 @@ border-radius: 4px;
     box-shadow:0px 2px 6px rgba(0,0,0,1);
     border-radius:3px;
     background:#fff;
+    z-index: 1;
 }
  
 /* Close Button */
@@ -189,62 +167,56 @@ border-radius: 4px;
 }
 
 #BoardIcon {
-    display: inline-block;
     vertical-align:top;
-    position: absolute;
-    width: 5em;
-    height: 5em;
+    position: relative;
 }
 
 #fillBoard {
-    position: absolute;
     z-index: 2;
     width: 100%;
-    height: 0%;
-    margin-top: 0;
-    overflow: hidden;
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
 }
 
 #EmptyBoard {
-    position: absolute;
     z-index: 1;
-    width: 100%;
-    height: 100%;
-    line-height: 150%;
-    text-align: center;
     color: #cccccc;
-    font-weight: bold;
-    font-family: consolas;
-    font-size: 1.5em;
 }
 
 #HatIcon {
-    display: inline-block;
     vertical-align:top;
-    position: absolute;
-    width: 5em;
-    height: 5em;
-    margin-left: 125px;
+    position: relative;
 }
 
 #fillHat {
-    position: absolute;
     z-index: 2;
     width: 100%;
-    height: 0%;
-    margin-top: 0;
-    overflow: hidden;
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
 }
 
 #EmptyHat {
-    position: absolute;
     z-index: 1;
-    width: 100%;
-    height: 100%;
-    line-height: 150%;
-    text-align: center;
     color: #cccccc;
-    font-weight: bold;
-    font-family: consolas;
-    font-size: 1.5em;
+}
+
+th {
+    padding: 2px;
+}
+
+#questionnaire{
+    vertical-align:top;
+    position: relative;
+}
+
+.disable {
+    -webkit-filter: grayscale(1); /* Webkit */
+    filter:gray; /* IE6-9 */
+    filter:grayscale(1); /* W3C */
+}
+
+.grey {
+    opacity:0.4;
 }

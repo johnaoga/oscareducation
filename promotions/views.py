@@ -1959,7 +1959,7 @@ def create_rate(request,type,id):
         )
 
 
-def get_rate_votes(request,type,id):
+def get_rate_vote(request,type,id):
     if request.method == 'POST':
         dicty = {}
         id = int(request.POST.get('id'))
@@ -1980,20 +1980,49 @@ def get_rate_votes(request,type,id):
             questions = RatingQuestion.objects.filter(type=1)
         else:
             questions = {}
-
+        dicty["data"] = {}
         for q in questions:
-            dicty[int(q.id)] = []
-            dicty[int(q.id)].append(q.question_statement)
+            dicty["data"][int(q.id)] = []
+            dicty["data"][int(q.id)].append(q.question_statement)
             r = Rating.objects.filter(question=q,resource=id,rated_by=request.user)
             if r.exists():
                 stars = r.first().value
-                dicty[int(q.id)].append(int(stars))
+                dicty["data"][int(q.id)].append(int(stars))
             else:
-                dicty[int(q.id)].append(0)
-        if len(dicty) <= 0:
+                dicty["data"][int(q.id)].append(0)
+        s = Star_rating.objects.filter(rated_by=request.user,resource=id)
+        if (s.exists() and s.count() == 1):
+            dicty["comment"] = s.first().comment
+        else:
+            dicty["comment"] = ""
+        if len(dicty["data"]) <= 0:
             print("NO questions found in DB")
         return HttpResponse(
             json.dumps(dicty),
+            content_type="application/json"
+        )
+    else:
+        return HttpResponse(
+            json.dumps({}),
+            content_type="application/json"
+        )
+
+def get_average(request,type,id):
+    if request.method == 'POST':
+        id = int(request.POST.get('id'))
+        try:
+            r = Resource.objects.get(pk=id)
+        except Resource.DoesNotExist:
+            r = None
+        questions = r.get_question_voted()
+        votes = {}
+        for qid in questions:
+            votes[qid] = []
+            votes[qid].append(r.get_average_votes_question(qid))
+            votes[qid].append(RatingQuestion.objects.get(pk=qid).question_statement)
+
+        return HttpResponse(
+            json.dumps(votes),
             content_type="application/json"
         )
     else:

@@ -39,10 +39,11 @@ function make_question(parent,question_stm,q_id,value) {
 };
 
 function makeQuestionnaire(parent,id,json_ss) {
-    if (Object.keys(json_ss).length === 0 && json_ss.constructor === Object) {
+    if (Object.keys(json_ss["data"]).length === 0 && json_ss.constructor === Object) {
         console.log("empty json object");
         return;
     }
+    console.log(json_ss);
     json_ob = json_ss;
     questions = json_ob;
 	var d = document;
@@ -51,11 +52,11 @@ function makeQuestionnaire(parent,id,json_ss) {
 	div.setAttribute("rid",id);
 	div.style="border:1px solid grey;padding: 3px;";
 	parent.append(div);
-	for (var key in json_ob) {
+	for (var key in json_ob["data"]) {
 	    if (rated_resources.hasOwnProperty(id)) {
-            make_question(div, json_ob[key][0], key, json_ss[key][1]);
+            make_question(div, json_ob["data"][key][0], key, json_ob["data"][key][1]);
         } else {
-            make_question(div, json_ob[key][0], key,0);
+            make_question(div, json_ob["data"][key][0], key,0);
         }
 	}
 	// add button
@@ -67,6 +68,7 @@ function makeQuestionnaire(parent,id,json_ss) {
 	text.setAttribute("maxlength","300");
 	text.rows = "7";
 	text.cols = "42";
+	text.innerHTML = json_ss["comment"];
 	p.append(text);
 	div.append(p);
 	var but = d.createElement("button");
@@ -78,6 +80,122 @@ function makeQuestionnaire(parent,id,json_ss) {
 	/* IMPORTANT initFunctions() set the functions that handles all the created html clicks etc.. !!*/
     initFunctions();
 };
+
+function showStudAvg(id) {
+    if ($("#popupdiv").length <= 0) {
+        makePopup($("#big" + id), id, "Student votes");
+        $('[data-popup=popup]').fadeIn();
+        makeChart(id);
+    } else {
+        $('[data-popup=popup]').fadeOut(350);
+        $("#popupdiv").remove();
+    }
+};
+
+function showProfAvg(id) {
+    if ($("#popupdiv").length <= 0) {
+        makePopup($("#big" + id), id, "Professor votes");
+        $('[data-popup=popup]').fadeIn();
+        makeChart(id);
+    } else {
+        $('[data-popup=popup]').fadeOut(350);
+        $("#popupdiv").remove();
+    }
+};
+
+function showQ(id) {
+    var owner = $("#big" + id).attr('owner');
+    var q = $("#questions");
+    if (owner !== "true") { // if user is owner do not show questionnaire
+        console.log("Questionnaire: " + id);
+        if (q.length <= 0) {
+            // no questionnaire present
+            makerating($("#big" + id).parent(), id);
+        } else {
+            if (q.attr("rid") == id) {
+                q.remove();
+            } else {
+                if (q.hasClass('voted')) {
+                    q.remove();
+                    makerating($("#big" + id).parent(), id);
+                } else {
+                    q.attr("rid", id);
+                    q.appendTo($("#big" + id).parent());
+                }
+            }
+        }
+    }
+};
+
+function makePopup(parent,id,title) {
+	var d = document;
+	var p = d.createElement("div");
+	p.id = "popupdiv";
+	p.className = "popup";
+	p.setAttribute("rid",id);
+	p.setAttribute("data-popup", "popup");
+	var div = d.createElement("div");
+	div.className = "popup-inner";
+	var h = d.createElement("h2");
+	h.innerHTML = "Statistiques: "+title;
+	var container = d.createElement("div");
+	container.id = "chartContainer";
+	container.style = "height: 300px; width: 100%;";
+	var close = d.createElement("a");
+	close.className = "popup-close";
+	close.setAttribute("data-popup-close","popup");
+	close.href = "#";
+	close.innerHTML = "x";
+	parent.append(p);
+	p.append(div);
+	div.append(h);
+	div.append(container);
+	div.append(close);
+
+    // Load close handler
+	$('[data-popup-close]').on('click', function (e) {
+        $('[data-popup=popup]').fadeOut(350);
+        e.preventDefault();
+        e.stopPropagation();
+        $("#popupdiv").remove();
+    });
+}
+
+function makeChart(id) {
+    $.ajax({
+        url: "average/", // the endpoint
+        type: "POST", // http method
+        data: {"id": id}, // data sent with the post request
+        // handle a successful response
+        success: function (json_returned) {
+            var chart = new CanvasJS.Chart("chartContainer",{
+                animationEnable: false,
+                theme: 'light1',
+                axisY: {title: "Nombres d'étoiles"}
+            });
+            var d = new Object();
+            /* Json returned: key is question id and value is an array:
+             *  array[0] is average vote and array[1] is the question statement */
+            d['type'] = "column";
+            d['dataPoints'] = [];
+            for (var key in json_returned) {
+                var point = new Object();
+                point['y'] = parseFloat(json_returned[key][0]);
+                point['label'] = key+"";
+                d['dataPoints'].push(point);
+            }
+            chart.options.data = [];
+            chart.options.data.push(d);
+            chart.render();
+            //preventDefault();
+        },
+        // handle a non-successful response
+        error: function (xhr, errmsg, err) {
+            console.log(xhr.status + ": b" + xhr.responseText); // provide a bit more info about the error to the console
+        }
+    });
+}
+
 function send_stars(json_s) {
 	/* Function to send new ratings to server and do something with return valueconsole.log(ratingValue1);
        json_s should be a json string containing 3 keys: 'id' (resource id), 'comment' and 'rated'.
@@ -117,24 +235,6 @@ function send_stars(json_s) {
 };
 
 function initFunctions() {
-	var fill_board = 0;
-    var update_board = setInterval(function () {
-        fill_board += 1;
-        $('#fillBoard').css('height', (fill_board + '%'));
-        //$('#fillIcon').css('margin-top', ((100 - fill)+'%'));
-        if (fill_board == 65) {
-            clearInterval(update_board);
-        }
-    }, 10);
-    var fill_hat = 0;
-    var update_hat = setInterval(function () {
-        fill_hat += 1;
-        $('#fillHat').css('height', (fill_hat + '%'));
-        //$('#fillIcon').css('margin-top', ((100 - fill)+'%'));
-        if (fill_hat == 35) {
-            clearInterval(update_hat);
-        }
-    }, 10);
     /* Default value for star rating and responses*/
     /* Handles everything when mouse over star rating */
     $('#stars li').on('mouseover', function () {
@@ -175,7 +275,7 @@ function initFunctions() {
 
         	$("#questions").addClass("voted");
         	$("#questions").fadeOut();
-        	var resend = false;
+        	var resend = true; // on submit force resend server
         	if (rated_resources.hasOwnProperty(id)) {
         	    for (var key in rated_resources[id]) {
         	        if (rated_resources[id][key] != json["rated"][key]) {
@@ -209,54 +309,6 @@ function initFunctions() {
         for (i = 0; i < onStar; i++) {
             $(stars[i]).addClass('selected');
         }
-    });
-    $('[data-popup-open]').on('click', function (e) {
-        var targeted_popup_class = jQuery(this).attr('data-popup-open');
-        $('[data-popup="' + targeted_popup_class + '"]').fadeIn(350);
-        $("#chartContainer").CanvasJSChart({ //Pass chart options
-            animationEnabled: true,
-            theme: "light1",
-            axisY: {
-                title: "Nombre d'étoiles"
-            },
-            data: [
-                {
-                    type: "column", //change it to column, spline, line, pie, etc
-                    dataPoints: [
-                        {y: 3.5, label: "exactitude"},
-                        {y: 2.7, label: "complétude"},
-                        {y: 4.2, label: "compréhensibilité"},
-                        {y: 1.9, label: "pertinance"}
-                    ]
-                }
-            ]
-        });
-        chart.render();
-        e.preventDefault();
-    });
-    $('[data-popup-open]').on('click', function (e) {
-        var targeted_popup_class = jQuery(this).attr('data-popup-open');
-        $('[data-popup="' + targeted_popup_class + '"]').fadeIn(350);
-        $("#chartContainer").CanvasJSChart({ //Pass chart options
-            animationEnabled: true,
-            theme: "light1",
-            axisY: {
-                title: "Nombre d'étoiles"
-            },
-            data: [
-                {
-                    type: "column", //change it to column, spline, line, pie, etc
-                    dataPoints: [
-                        {y: 3.5, label: "exactitude"},
-                        {y: 2.7, label: "complétude"},
-                        {y: 4.2, label: "compréhensibilité"},
-                        {y: 1.9, label: "pertinance"}
-                    ]
-                }
-            ]
-        });
-        chart.render();
-        e.preventDefault();
     });
 };
 function setratedresources(jsond) {
@@ -293,6 +345,7 @@ function ajaxsendmakerating(parent,id) {
                     */
             makeQuestionnaire(parent, id, json_returned);
             questions = json_returned;
+            console.log(json_returned);
             currentid = id;
         },
         // handle a non-successful response
@@ -301,3 +354,22 @@ function ajaxsendmakerating(parent,id) {
         }
     });
 };
+
+function get_average(id) {
+    $.ajax({
+        url: "average/", // the endpoint
+        type: "POST", // http method
+        data: {"id": id}, // data sent with the post request
+        // handle a successful response
+        success: function (json_returned) {
+            /* Json returned: key is question id and value is an array:
+             *  array[0] is average vote and array[1] is the question statement */
+            //console.log(json_returned);
+
+        },
+        // handle a non-successful response
+        error: function (xhr, errmsg, err) {
+            console.log(xhr.status + ": b" + xhr.responseText); // provide a bit more info about the error to the console
+        }
+    });
+}

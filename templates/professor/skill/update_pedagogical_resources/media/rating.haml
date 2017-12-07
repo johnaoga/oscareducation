@@ -1,41 +1,78 @@
 -load static
 -load rating_tags
+-load compress
 
-%div.small{id:"big{{resource.id}}", style:"cursor: default;"}
-  %img{id: "star{{ resource.id}}",src: "https://d30y9cdsu7xlg0.cloudfront.net/png/431-200.png",style:"height:20px;width:height;"}
-    Note
+%div.small.rating{id:"big{{resource.id}}", owner:"{% owner request.user resource.added_by 'true' 'false' %}",style:"cursor: default;"}
+  %table
+    %th
+      %div
+        %img{class:"pop{{resource.id}}",id: "star{{ resource.id }}", data-placement:"top",data-toggle:"popover",src: "https://d30y9cdsu7xlg0.cloudfront.net/png/431-200.png",style:"height:20px;width:height;"}
+    %th
+      %div{id:"ratingtext{{resource.id}}"}
+        Note
   %link{href: "{% static 'StarRating.css' %}",rel: "stylesheet"}
   %link{href: "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css",rel: "stylesheet"}
+    %div.hidden{id:"tooltip{{resource.id}}"}
+      %table{cellspacing:"20"}
+        %th
+          %div{id:"questionnaire", onclick:"showQ({{resource.id}})"}
+            %img{id: "img{{resource.id}}",src: "{% static 'q.png' %}",style:"height:40px;width:height;"}
+        %th
+          %div{id:"BoardIcon", onclick:"showStudAvg({{resource.id}})"}
+            %div{id:"EmptyBoard"}
+              %img{style:"width: 40px; height: 40px;", src:"{% static 'blackboard1.png' %}" }
+            %div{id:"fillBoard"}
+              %img{style:"width: 40px; height: 40px;", src:"{% static 'blackboard2.png' %}" }
+        %th
+          %div{id:"HatIcon", onclick:"showProfAvg({{resource.id}})"}
+            %div{id:"EmptyHat"}
+              %img{src: "{% static 'student_hat1.png' %}",style:"height:40px;width:height;"}
+            %div{id:"fillHat"}
+              %img{src: "{% static 'student_hat2.png' %}",style:"height:40px;width:height;"}
+  %div.small
   -if resource.added_by == request.user
-    %div.small
-      Vous ne pouvez pas voter votre propre resource
+    Vous ne pouvez pas voter votre propre resource
   -else
     -if resource.id in rated_resources
-      %div.small
-        Merci pour votre vote. Cliquer pour le modifier
-    %script{src: "{% static 'jquery-3.2.1.min.js' %}"}
-    %script{src: "{% static 'questionnaire.js' %}"}
+      Merci pour votre vote. Cliquer pour le modifier
+  -block javascript
+    -compress js
+      %script{src: "{% static 'jquery-3.2.1.min.js' %}"}
+      %script{src: "{% static 'questionnaire.js' %}"}
+      %script{src: "{% static 'jquery.canvasjs.min.js' %}"}
     :javascript
       var t = '{{rated_resources|get_json|safe}}';
+      var popup = null;
       $(document).ready(function(){
-        setratedresources(t);
-        $("#big"+{{resource.id}}).on('click',function() {
-          var q = $("#questions");
-          if (q.length<=0) {
-            // no questionnaire present
-            makerating($("#big"+{{resource.id}}).parent(),{{resource.id}});
-          } else {
-            if (q.attr("rid") == {{resource.id}}) {
-              q.remove();
-            } else {
-              if (q.hasClass('voted')) {
-                q.remove();
-                makerating($("#big"+{{resource.id}}).parent(),{{resource.id}});
+          setratedresources(t);
+          $(".pop"+{{resource.id}}).popover({
+            focus: true,
+            trigger: "manual",
+            html: true,
+            animation:false,
+            content: $("#tooltip"+{{resource.id}}).html()
+          });
+          $("#big"+{{resource.id}}).click(function(e) {
+              initFunctions();
+              var owner = $("#big"+{{resource.id}}).attr('owner');
+              e.stopPropagation();
+              if (popup != null){
+                  popup.next().remove();
+                  popup = null;
               } else {
-                q.attr("rid",{{resource.id}});
-                q.appendTo($("#big"+{{resource.id}}).parent());
+                if ($("#popupdiv").length <= 0) {
+                  if ($("#questions").length <=0) {
+                    popup = $("#star"+{{ resource.id}});
+                    popup.popover("show");
+                  } else {
+                    $("#questions").remove();
+                    popup = $("#star"+{{ resource.id}});
+                    popup.popover("show");
+                  }
+                  if (owner=="true") {
+                    $("#img"+{{resource.id}}).addClass('grey');
+                  }
+                }
               }
-            }
-          }
+          });
         });
-      });
