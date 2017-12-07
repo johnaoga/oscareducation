@@ -16,19 +16,24 @@
       %table{cellspacing:"20"}
         %th
           %div{id:"questionnaire", onclick:"showQ({{resource.id}})"}
-            %img{id: "img{{resource.id}}",src: "{% static 'q.png' %}",style:"height:40px;width:height;"}
+            %img{id: "img{{resource.id}}",src: "{% static 'q.png' %}",style:"height:50px;width:height;"}
+          %p Vote
         %th
-          %div{id:"BoardIcon", onclick:"showStudAvg({{resource.id}},this)"}
+          %div{id:"BoardIcon", onclick:"showProfAvg({{resource.id}},this)"}
             %div{id:"EmptyBoard"}
-              %img{style:"width: 40px; height: 40px;", src:"{% static 'blackboard1.png' %}" }
+              %img{style:"width: 100%; height: 100%;", src:"{% static 'blackboard1.png' %}" }
             %div{id:"fillBoard"}
-              %img{style:"width: 100%;", src:"{% static 'blackboard2.png' %}" }
+              %img{style:"width: 50px; height: 50px;", src:"{% static 'blackboard2.png' %}" }
+          %p{id:"profavg"}
+            {% get_average_rated_dict rated_resources resource.id "prof" %}%
         %th
-          %div{id:"HatIcon", onclick:"showProfAvg({{resource.id}},this)"}
+          %div{id:"HatIcon", onclick:"showStudAvg({{resource.id}},this)"}
             %div{id:"EmptyHat"}
-              %img{src: "{% static 'student_hat1.png' %}",style:"height:40px;width:height;"}
+              %img{src: "{% static 'student_hat1.png' %}",style:"height:100%;width:100%;"}
             %div{id:"fillHat"}
-              %img{src: "{% static 'student_hat2.png' %}",style:"width: 100%;"}
+              %img{src: "{% static 'student_hat2.png' %}",style:"height:50px;width:50px;"}
+          %p{id:"studavg"}
+            {% get_average_rated_dict rated_resources resource.id "stud" %}%
   %div.small
   -if resource.added_by == request.user
     Vous ne pouvez pas voter votre propre resource
@@ -54,6 +59,33 @@
           });
           $("#big"+{{resource.id}}).click(function(e) {
               initFunctions();
+		      var fill_board = 0;
+		      var update_board = setInterval(function()
+                {
+                    fill_board += 1;
+                    $("#big"+{{resource.id}}).find('#fillBoard').css('height', (fill_board+'%'));
+                    //$('#fillIcon').css('margin-top', ((100 - fill)+'%'));
+                    var v = $("#big"+{{resource.id}}).find("#profavg").html();
+                    v = v.replace("%","");
+                    if (fill_board >= parseFloat(v)) {
+                        clearInterval(update_board);
+                    }
+
+                    }, 10);
+
+                var fill_hat = 0;
+                var update_hat = setInterval(function()
+                {
+                    fill_hat += 1;
+                    $("#big"+{{resource.id}}).find('#fillHat').css('height', (fill_hat+'%'));
+                    var v = $("#big"+{{resource.id}}).find("#studavg").html();
+                    v = v.replace("%","");
+                    //$('#fillIcon').css('margin-top', ((100 - fill)+'%'));
+                    if (fill_hat >= parseFloat(v) ) {
+                        clearInterval(update_hat);
+                    }
+
+                    }, 10);
               var owner = $("#big"+{{resource.id}}).attr('owner');
               e.stopPropagation();
               if (popup != null){

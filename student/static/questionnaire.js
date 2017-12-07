@@ -85,7 +85,7 @@ function showStudAvg(id) {
     if ($("#popupdiv").length <= 0) {
         makePopup($("#big" + id), id, "Student votes");
         $('[data-popup=popup]').fadeIn();
-        makeChart(id);
+        makeChart(id,"stud");
     } else {
         $('[data-popup=popup]').fadeOut(350);
         $("#popupdiv").remove();
@@ -96,7 +96,7 @@ function showProfAvg(id,t) {
     if ($("#popupdiv").length <= 0) {
         makePopup($("#big" + id), id, "Professor votes");
         $('[data-popup=popup]').fadeIn();
-        makeChart(id);
+        makeChart(id,"prof");
     } else {
         $('[data-popup=popup]').fadeOut(350);
         $("#popupdiv").remove();
@@ -161,17 +161,17 @@ function makePopup(parent,id,title) {
     });
 }
 
-function makeChart(id) {
+function makeChart(id,type) {
     $.ajax({
         url: "average/", // the endpoint
         type: "POST", // http method
-        data: {"id": id}, // data sent with the post request
+        data: {"id": id, "type": type}, // data sent with the post request
         // handle a successful response
         success: function (json_returned) {
             var chart = new CanvasJS.Chart("chartContainer",{
                 animationEnable: false,
                 theme: 'light1',
-                axisY: {title: "Nombres d'étoiles"}
+                axisY: {title: "Nombres d'étoiles",maximum: 5}
             });
             var d = new Object();
             /* Json returned: key is question id and value is an array:
@@ -181,7 +181,7 @@ function makeChart(id) {
             for (var key in json_returned) {
                 var point = new Object();
                 point['y'] = parseFloat(json_returned[key][0]);
-                point['label'] = key+"";
+                point['label'] = json_returned[key][1]+"";
                 d['dataPoints'].push(point);
             }
             chart.options.data = [];

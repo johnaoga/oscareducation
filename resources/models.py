@@ -161,24 +161,48 @@ class Resource(models.Model):
         else:
             return 0
 
-    def get_average_votes_question(self,question):
+    def get_average_votes_question(self,question,type):
         r = Rating.objects.filter(resource=self,question=question)
-        count = r.count()
+
+        count = 0
         if r.exists():
             avg = 0.0
             for e in r:
-                avg += e.value
-            avg = avg / float(count)
+                if type == "stud":
+                    try:
+                        Student.objects.get(user=e.rated_by)
+                        avg += e.value
+                        count+=1
+                    except Student.DoesNotExist:
+                        pass
+                elif type == "prof":
+                    try:
+                        Professor.objects.get(user=e.rated_by)
+                        avg += e.value
+                        count += 1
+                    except Professor.DoesNotExist:
+                        pass
+                else:
+                    pass
+            if count == 0:
+                return 0.0
+            else:
+                avg = avg / float(count)
             return avg
         else:
             return 0
 
-    def get_question_voted(self):
+    def get_question_voted(self,type):
         r = Rating.objects.filter(resource=self)
         questions = []
         for e in r:
             if e.question.id not in questions:
-                questions.append(e.question.id)
+                if type == "prof" and e.question.type == 0:
+                    questions.append(e.question.id)
+                elif type == "stud" and e.question.type == 1:
+                    questions.append(e.question.id)
+                else:
+                    pass
         return questions
 
 

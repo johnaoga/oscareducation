@@ -63,3 +63,6 @@ class Question(models.Model):
 
     type = models.IntegerField()
     """The type of question (user for prof vs student)"""
+
+    label = models.TextField()
+    """The label assigned to a question """

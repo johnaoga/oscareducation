@@ -833,12 +833,18 @@ def update_pedagogical_ressources(request, type, id):
     rated_res = {}
     """All resource id from the page!"""
     for item in base.resource.all():
+        resource = Resource.objects.get(pk=item.id)
+        st,p = resource.average()
+
         r = Rating.objects.filter(resource=item.id,rated_by=request.user)
         s = Star_rating.objects.filter(resource=item.id,rated_by=request.user)
         if r.exists() & s.exists():
             if s.count() != 1:
                 print "Error more than 1 star rating for 1 resource"
             rated_res[item.id] = {}
+            rated_res[item.id]["prof"] = p
+            rated_res[item.id]["stud"] = st
+            print(str(p)+""+str(st))
             for rr in r:
                 rated_res[item.id][rr.question.id] = rr.value
 
@@ -1981,6 +1987,10 @@ def get_rate_vote(request,type,id):
         else:
             questions = {}
         dicty["data"] = {}
+        resource = Resource.objects.get(pk=id)
+        s,p = resource.average()
+        dicty["professor"] = s
+        dicty["student"] = p
         for q in questions:
             dicty["data"][int(q.id)] = []
             dicty["data"][int(q.id)].append(q.question_statement)
@@ -2010,16 +2020,17 @@ def get_rate_vote(request,type,id):
 def get_average(request,type,id):
     if request.method == 'POST':
         id = int(request.POST.get('id'))
+        type = str(request.POST.get('type'))
         try:
             r = Resource.objects.get(pk=id)
         except Resource.DoesNotExist:
             r = None
-        questions = r.get_question_voted()
+        questions = r.get_question_voted(type)
         votes = {}
         for qid in questions:
             votes[qid] = []
-            votes[qid].append(r.get_average_votes_question(qid))
-            votes[qid].append(RatingQuestion.objects.get(pk=qid).question_statement)
+            votes[qid].append(r.get_average_votes_question(qid,type))
+            votes[qid].append(RatingQuestion.objects.get(pk=qid).label)
 
         return HttpResponse(
             json.dumps(votes),
