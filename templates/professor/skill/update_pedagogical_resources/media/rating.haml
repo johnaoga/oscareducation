@@ -18,17 +18,17 @@
           %div{id:"questionnaire", onclick:"showQ({{resource.id}})"}
             %img{id: "img{{resource.id}}",src: "{% static 'q.png' %}",style:"height:40px;width:height;"}
         %th
-          %div{id:"BoardIcon", onclick:"showStudAvg({{resource.id}})"}
+          %div{id:"BoardIcon", onclick:"showStudAvg({{resource.id}},this)"}
             %div{id:"EmptyBoard"}
               %img{style:"width: 40px; height: 40px;", src:"{% static 'blackboard1.png' %}" }
             %div{id:"fillBoard"}
-              %img{style:"width: 40px; height: 40px;", src:"{% static 'blackboard2.png' %}" }
+              %img{style:"width: 100%;", src:"{% static 'blackboard2.png' %}" }
         %th
-          %div{id:"HatIcon", onclick:"showProfAvg({{resource.id}})"}
+          %div{id:"HatIcon", onclick:"showProfAvg({{resource.id}},this)"}
             %div{id:"EmptyHat"}
               %img{src: "{% static 'student_hat1.png' %}",style:"height:40px;width:height;"}
             %div{id:"fillHat"}
-              %img{src: "{% static 'student_hat2.png' %}",style:"height:40px;width:height;"}
+              %img{src: "{% static 'student_hat2.png' %}",style:"width: 100%;"}
   %div.small
   -if resource.added_by == request.user
     Vous ne pouvez pas voter votre propre resource

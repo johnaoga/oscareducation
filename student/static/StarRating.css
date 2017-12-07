@@ -175,8 +175,8 @@ border-radius: 4px;
     z-index: 2;
     width: 100%;
     position: absolute;
-    right: 0px;
-    bottom: 0px;
+    left: 0px;
+    top: 0px;
 }
 
 #EmptyBoard {
@@ -193,8 +193,8 @@ border-radius: 4px;
     z-index: 2;
     width: 100%;
     position: absolute;
-    right: 0px;
-    bottom: 0px;
+    left: 0px;
+    top: 0px;
 }
 
 #EmptyHat {

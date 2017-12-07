@@ -92,7 +92,7 @@ function showStudAvg(id) {
     }
 };
 
-function showProfAvg(id) {
+function showProfAvg(id,t) {
     if ($("#popupdiv").length <= 0) {
         makePopup($("#big" + id), id, "Professor votes");
         $('[data-popup=popup]').fadeIn();
@@ -355,21 +355,16 @@ function ajaxsendmakerating(parent,id) {
     });
 };
 
-function get_average(id) {
-    $.ajax({
-        url: "average/", // the endpoint
-        type: "POST", // http method
-        data: {"id": id}, // data sent with the post request
-        // handle a successful response
-        success: function (json_returned) {
-            /* Json returned: key is question id and value is an array:
-             *  array[0] is average vote and array[1] is the question statement */
-            //console.log(json_returned);
+function setfill() {
+    var fill_board = 0;
+		var update_board = setInterval(function()
+		{
+			fill_board += 1;
+			$('#fillBoard').css('height', (fill_board+'%'));
+	    	//$('#fillIcon').css('margin-top', ((100 - fill)+'%'));
+	    	if (fill_board == 65) {
+	    		clearInterval(update_board);
+	    	}
 
-        },
-        // handle a non-successful response
-        error: function (xhr, errmsg, err) {
-            console.log(xhr.status + ": b" + xhr.responseText); // provide a bit more info about the error to the console
-        }
-    });
+	    }, 10);
 }
