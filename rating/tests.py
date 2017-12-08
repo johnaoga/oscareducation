@@ -23,21 +23,6 @@ class Star_rating_TestCase(TestCase):
     def test_star_in_table(self):
         star_r = Star_rating.objects.get(id=self.id)
         self.assertEqual(star_r.star,2)
-        self.assertEqual(star_r.id,1)
-
-# Tests for the class Answer
-class Answer_TestCase(TestCase):
-    def setUp(self):
-        self.ob1 = Answer.objects.create(answer_statement = "Nous sommes le 31 octobre")
-        self.ob2 = Answer.objects.create(answer_statement = " Yes we can")
-
-
-    def test_answer_in_table(self):
-        ans1 = Answer.objects.get(pk=self.ob1.id)
-        self.assertEqual(ans1.answer_statement, "Nous sommes le 31 octobre")    # True
-        ans2 = Answer.objects.get(pk=self.ob2.id)
-        self.assertEqual(ans2.answer_statement, " Yes we can")                  # False
-
 
 # Tests for the class Questin
 class Question_TestCase(TestCase):
@@ -54,31 +39,15 @@ class Question_TestCase(TestCase):
         self.assertEqual(ques2.type, 1)
         # False
 
-class Quetionnaire_TestCase(TestCase):
-    def setUp(self):
-        self.q1 = Question.objects.create(question_statement = "abba baba", type = 0)
-        self.a1 = Answer.objects.create(answer_statement = "Yeah")
-        self.qaire = Questionnaire.objects.create(question=self.q1,answer=self.a1)
-
-    def test_questionnaire_id(self):
-        qaire_t = Questionnaire.objects.get(pk=1)
-        self.assertEqual(qaire_t.question.question_statement,self.q1.question_statement)
-        self.assertEqual(qaire_t.answer.answer_statement,self.a1.answer_statement)
-
-    def test_questionnaire_question(self):
-        qaire_t = Questionnaire.objects.get(question=self.q1)
-        self.assertEqual(2, qaire_t.pk)
-        '''id=2 because test is called before each test function'''
 
 class Rating_TestCase(TestCase):
     def setUp(self):
         self.q1 = Question.objects.create(question_statement = "abba baba", type = 0)
-        self.a1 = Answer.objects.create(answer_statement = "Yeah")
         self.u = User.objects.create()
         self.r1 = Resource.objects.create(section="test",content='{"kind": "lesson", "title": "Fonctions de référence", "author": "Paul Robaux"}  ')
         self.d1 = timezone.now()
-        self.ra1 = Rating.objects.create(resource=self.r1,question=self.q1,answer=self.a1,rated_by=self.u,rated_on=self.d1)
+        self.ra1 = Rating.objects.create(resource=self.r1,question=self.q1,value=3.0,rated_by=self.u,rated_on=self.d1)
 
     def test_rating(self):
-        q = Rating.objects.get(pk=1)
-        self.assertEqual(q.answer.answer_statement,self.a1.answer_statement)
+        q = Rating.objects.get(pk=self.ra1.id)
+        self.assertEqual(q.value,3.0)

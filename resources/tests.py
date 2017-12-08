@@ -19,7 +19,6 @@ class Resource_TestCase(TestCase):
         self.prof2 = Professor.objects.create(user=self.u1,nbr_4_star_res=0,status= {'status':'ye'},id=2)
         self.stud = Student.objects.create(user=self.u2)
         self.q1 = Question.objects.create(question_statement="Did you like it?",type=1)
-        self.a1 = Answer.objects.create(answer_statement="Yes, id did")
 
     def test_resource_add_star_rating(self):
         t = self.r.add_star(2,self.u)
@@ -74,8 +73,8 @@ class Resource_Rating_TestCase(TestCase):
         )
         self.stud = Student.objects.create(user=self.u2)
         self.q1 = Question.objects.create(question_statement="Did you like it?", type=1)
-        self.a1 = Answer.objects.create(answer_statement="Yes, id did")
-        self.a2 = Answer.objects.create(answer_statement="Amazing")
+        self.a1 = 2.0
+        self.a2 = 3.0
         self.r = Resource.objects.create(
             section="test",
             content='{"kind": "lesson", "title": "Fonctions de référence", "author": "Paul Robaux"}',
@@ -85,18 +84,17 @@ class Resource_Rating_TestCase(TestCase):
     def test_add_question_rating(self):
         """"""
         """Rate own resource"""
-        qr = self.r.add_rating(question=self.q1,answer=self.a1,user=self.prof.user)
+        qr = self.r.add_rating(question=self.q1,value=self.a1,user=self.prof.user)
         self.assertEqual(qr,None)
         self.assertEqual(Rating.objects.count(),0)
         """Rate someone elses resource"""
-        qr = self.r.add_rating(question=self.q1,answer=self.a1,user=self.prof2.user)
-        self.assertEqual(qr.id,1)
+        qr = self.r.add_rating(question=self.q1,value=self.a1,user=self.prof2.user)
         self.assertEqual(Rating.objects.count(), 1)
 
     def test_update_rating(self):
         """"""
         """Add Rating and modify it"""
-        qr = self.r.add_rating(question=self.q1, answer=self.a1, user=self.prof2.user)
-        qr = self.r.add_rating(question=self.q1, answer=self.a2, user=self.prof2.user)
+        qr = self.r.add_rating(question=self.q1, value=self.a1, user=self.prof2.user)
+        qr = self.r.add_rating(question=self.q1, value=self.a2, user=self.prof2.user)
         self.assertEqual(Rating.objects.count(), 1)
-        self.assertEqual(Rating.objects.get(pk=qr.id).answer,self.a2)
+        self.assertEqual(Rating.objects.get(pk=qr.id).value,self.a2)

@@ -3,12 +3,14 @@ from __future__ import unicode_literals
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.core.validators import MaxValueValidator, MinValueValidator
+
 
 class Star_rating(models.Model):
     resource = models.ForeignKey('resources.Resource')
     """The resource linked to this star rating"""
 
-    star = models.FloatField()
+    star = models.FloatField(validators = [MinValueValidator(0.0), MaxValueValidator(5.0)])
     """Number of stars given"""
 
     rated_by = models.ForeignKey(User)
@@ -17,14 +19,8 @@ class Star_rating(models.Model):
     rated_on = models.DateTimeField()
     """The date when the star rating was given"""
 
-    def add_stars(self,stars,resource,user):
-        """Add stars and saves all info to DB"""
-        self.star = stars
-        self.resource = resource
-        self.rated_by = user
-        self.rated_on = timezone.now()
-        self.save()
-        return
+    comment = models.CharField(max_length=300,null=True,blank=True)
+    """Comment associated with star rating"""
 
     class Meta:
         unique_together = ('resource','rated_by')
@@ -37,8 +33,8 @@ class Rating(models.Model):
     question = models.ForeignKey('Question')
     """The Question answered for this rating"""
 
-    answer = models.ForeignKey('Answer')
-    """The Answer given to this rating"""
+    value = models.FloatField(validators = [MinValueValidator(0.0), MaxValueValidator(5.0)])
+    """The value given to this rating"""
 
     rated_by = models.ForeignKey(User)
     """The User who rated"""
@@ -46,18 +42,19 @@ class Rating(models.Model):
     rated_on = models.DateTimeField()
     """Date of rating"""
 
-    def number_votes_answer(self,resource,question,answer):
-        """Get the number of votes for answer at a question from a resource"""
-        r = Rating.objects.filter(resource=resource,question=question,answer=answer)
+
+    def number_votes_question(self,resource,question):
+        """
+
+        :param resource: teh resource we want the votes from
+        :param question: the question we want the votes from
+        :return: return the number of people who voted for the question on th reosource
+        """
+        r = Rating.objects.filter(resource=resource,question=question)
         return r.entry_set.count()
 
     class Meta:
         unique_together = ('resource','question','rated_by')
-
-
-class Answer(models.Model):
-    answer_statement = models.TextField()
-    """The Answer statement"""
 
 
 class Question(models.Model):
@@ -67,9 +64,5 @@ class Question(models.Model):
     type = models.IntegerField()
     """The type of question (user for prof vs student)"""
 
-class Questionnaire(models.Model):
-    question = models.ForeignKey('Question', null=True)
-    """The question"""
-
-    answer = models.ForeignKey('Answer', null=True)
-    """The Answer"""
+    label = models.TextField()
+    """The label assigned to a question """

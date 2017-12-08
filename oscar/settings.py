@@ -51,11 +51,11 @@ INSTALLED_APPS = (
     'crispy_forms',
     'oscar',  # hack: add self for templates dir
     'promotions',
-    'rating',
     'skills',
     'planification',
     'examinations',
     'student',
+    'rating',
     'stats',
     'compressor',
     'users',
@@ -162,6 +162,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+
 SITE_ID = 1
 
 MEDIA_URL = '/media/'
@@ -203,3 +204,7 @@ EMAIL_HOST_USER ="euredukaoscar.noreply@gmail.com"
 EMAIL_HOST_PASSWORD ="7A=em=nBt@+r3MFq"
 
 EMAIL_USE_TLS = True
+
+DEFAULT_QUESTIONS_ID = []
+WEIGHT_STUDENTS = 0.3
+WEIGHT_PROFESSORS = 0.7
