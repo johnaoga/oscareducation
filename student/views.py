@@ -198,6 +198,8 @@ def validate_exercice(request, test_student, test_exercice):
                 raw_answer[number]["response"] = [request.POST[str(number)]]
             elif data["type"] == "chart-barchart":
                 raw_answer[number]["response"] = [request.POST[str(number)]]
+            elif data["type"] == "chart-piechart":
+                raw_answer[number]["response"] = [request.POST[str(number)]]
             else:
                 raise Exception()
 

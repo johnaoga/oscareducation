@@ -59,6 +59,13 @@ function chart_refresh()
 
     }
 
+    if($("#piechart-hiddenInput"))
+    {
+        //update the hidden field every 1/2 second. It works.
+        setInterval(changePieChartHiddenInput, 500);
+
+    }
+
 }
 
 function chart_setBars()

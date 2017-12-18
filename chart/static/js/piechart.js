@@ -38,6 +38,15 @@ function chart_createPieChartFromForm()
 	}
 }
 
+
+var changePieChartHiddenInput = function()
+{
+    var data = {"data":dataArr[0],"labels":labels[0]}
+    $("#piechart-hiddenInput").val(JSON.stringify(data));
+    console.log($("#piechart-hiddenInput").val())
+
+}
+
 function create_pieChart(element,index)//complete is a boolean determining if the pieChart is complete or not
 {
 	var colorsChart = [];

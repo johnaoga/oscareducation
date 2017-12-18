@@ -73,27 +73,28 @@ def evaluate_chart(question, response):
         elif evaluation_type == "chart-piechart":
             #Assuming answer are in a dic key are sectorname and value are sector size
             student_answers = []
-            for x in response[0].decode('utf-8').split(','):
-                try:
-                    student_answers.append( (standardizedTxt(x[:x.rfind(":")]),int(x[x.rfind(':')+1:])) )
-                except ValueError:
-                    pass
+            try:
+                student_answers_json = json.loads(str(response[0].decode('utf-8')))
+            except:
+                return 0
+            for (l,x) in zip(student_answers_json['labels'],student_answers_json['data']):
+                student_answers.append((standardizedTxt(l), int(x)))
             student_answers = sorted(student_answers,reverse=True)
             for answer_str in list_raw_correct_answers:
                 try:
                     answer_json = json.loads(str(answer_str['chart']))
                 except Exception as e:
+                    print(str(answer_str['chart']))
                     print(e)
-                outarray = answer_json['point']
+                point = answer_json['point']
+                labels = answer_json['labels']
                 correct_answer = []
-                for x in outarray.decode('utf-8')[1:-1].split(','):#response[0].decode('utf-8').split(','):
+                for (l,x) in zip(labels,point):
                     try:
-                        correct_answer.append((standardizedTxt(x[:x.rfind(":")]), int(x[x.rfind(':') + 1:])))
+                        correct_answer.append((standardizedTxt(l), int(x)))
                     except ValueError:
                         pass
                 correct_answer = sorted(correct_answer,reverse=True)
-
-                # raise Exception('Need more information')
                 if sameTupleArray(correct_answer, student_answers):
                     return 1
             return 0
